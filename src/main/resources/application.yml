@@ -1,1 +1,32 @@
-spring.application.name=manchui
+# 1. 기본값 프로파일
+spring:
+  application:
+    name: manchui
+
+  profiles:
+    default: local # (로컬로 지정)
+
+  # .env import
+  config:
+    import: optional:file:.env[.properties]
+
+  datasource:
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create # 로컬 개발 환경에서는 create 사용
+    show-sql: true
+    properties:
+      hibernate:
+        # 테이블명 소문자 + snake_case 설정
+        naming:
+        physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+        format_sql: true
+        id:
+          new_generator_mappings: true
+        dialect: org.hibernate.dialect.MySQLDialect
+    defer-datasource-initialization: true
