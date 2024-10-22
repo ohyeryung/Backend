@@ -42,6 +42,6 @@ public class JoinController {
 
         joinService.checkEmail(emailDTO);
 
-        return ResponseEntity.ok(SuccessResponse.successWithNoData("중복되지 않은 이메일 입니다."));
+        return ResponseEntity.ok(SuccessResponse.successWithNoData("사용 가능한 이메일 입니다."));
     }
 }
