@@ -23,13 +23,11 @@ public class User extends Timestamped {
     private String name;
     private String email;
     private String password;
-    private String profile_image_path;
-    private String role;
+    private String profileImagePath;
 
-    public User(String name, String email, String password, String role) {
+    public User(String name, String email, String password) {
         this.name = name;
         this.email = email;
         this.password = password;
-        this.role = role;
     }
 }

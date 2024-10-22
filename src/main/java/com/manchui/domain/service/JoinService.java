@@ -40,7 +40,7 @@ public class JoinService {
         }
 
         String encodedPassword = bCryptPasswordEncoder.encode(password);
-        User user = new User(name, email, encodedPassword, "ROLE_USER");
+        User user = new User(name, email, encodedPassword);
 
         userRepository.save(user);
     }
