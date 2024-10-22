@@ -1,6 +1,5 @@
 package com.manchui.domain.controller;
 
-import com.manchui.domain.dto.EmailDTO;
 import com.manchui.domain.dto.JoinDTO;
 import com.manchui.domain.dto.NameDTO;
 import com.manchui.domain.service.JoinService;
@@ -35,13 +34,5 @@ public class JoinController {
         joinService.checkName(nameDTO);
 
         return ResponseEntity.ok().body(SuccessResponse.successWithNoData("사용 가능한 이름 입니다."));
-    }
-
-    @PostMapping("/api/auths/check-email")
-    public ResponseEntity<SuccessResponse<Void>> checkEmail(@RequestBody EmailDTO emailDTO) {
-
-        joinService.checkEmail(emailDTO);
-
-        return ResponseEntity.ok(SuccessResponse.successWithNoData("사용 가능한 이메일 입니다."));
     }
 }

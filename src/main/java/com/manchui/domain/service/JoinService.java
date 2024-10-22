@@ -1,6 +1,5 @@
 package com.manchui.domain.service;
 
-import com.manchui.domain.dto.EmailDTO;
 import com.manchui.domain.dto.JoinDTO;
 import com.manchui.domain.dto.NameDTO;
 import com.manchui.domain.entity.User;
@@ -28,8 +27,6 @@ public class JoinService {
         String passwordConfirm = joinDTO.getPasswordConfirm();
 
         checkName(new NameDTO(name));
-
-        checkEmail(new EmailDTO(email));
 
         if(!isValidPassword(password)){
             throw new CustomException(ErrorCode.INVALID_PASSWORD_FORMAT);
@@ -63,14 +60,6 @@ public class JoinService {
         Boolean isExist = userRepository.existsByName(nameDTO.getName());
         if (isExist) {
             throw new CustomException(ErrorCode.ILLEGAL_USERNAME_DUPLICATION);
-        }
-    }
-
-    public void checkEmail(EmailDTO emailDTO) {
-
-        Boolean isExist = userRepository.existsByEmail(emailDTO.getEmail());
-        if (isExist) {
-            throw new CustomException(ErrorCode.ILLEGAL_EMAIL_DUPLICATION);
         }
     }
 }
