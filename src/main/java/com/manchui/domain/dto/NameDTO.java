@@ -8,4 +8,8 @@ import lombok.Setter;
 public class NameDTO {
 
     private String name;
+
+    public NameDTO(String name) {
+        this.name = name;
+    }
 }

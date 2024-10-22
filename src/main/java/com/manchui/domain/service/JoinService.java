@@ -27,15 +27,9 @@ public class JoinService {
         String email = joinDTO.getEmail();
         String passwordConfirm = joinDTO.getPasswordConfirm();
 
-        Boolean isExist = userRepository.existsByName(name);
-        if (isExist) {
-            throw new CustomException(ErrorCode.ILLEGAL_USERNAME_DUPLICATION);
-        }
+        checkName(new NameDTO(name));
 
-       isExist = userRepository.existsByEmail(email);
-        if (isExist) {
-            throw new CustomException(ErrorCode.ILLEGAL_EMAIL_DUPLICATION);
-        }
+        checkEmail(new EmailDTO(email));
 
         if(!isValidPassword(password)){
             throw new CustomException(ErrorCode.INVALID_PASSWORD_FORMAT);
