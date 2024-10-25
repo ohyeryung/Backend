@@ -87,7 +87,7 @@ public class GlobalExceptionHandler {
                 .message(message)
                 .httpStatus(errorCode.getHttpStatus());
 
-        return ResponseEntity.badRequest().body(response);
+        return ResponseEntity.status(errorCode.getHttpStatus()).body(response);
     }
 
 }
