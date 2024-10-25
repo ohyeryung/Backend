@@ -13,6 +13,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -26,6 +27,12 @@ import java.util.Set;
 
 @Slf4j
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
+
+    @Value("${token.access.expiration}")
+    private long accessTokenExpiration;
+
+    @Value("${token.refresh.expiration}")
+    private long refreshTokenExpiration;
 
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
@@ -82,8 +89,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String userEmail = authentication.getName();
 
-        String access = jwtUtil.createJwt("access", userEmail, 600000L);
-        String refresh = jwtUtil.createJwt("refresh", userEmail, 8640000L);
+        String access = jwtUtil.createJwt("access", userEmail, accessTokenExpiration);
+        String refresh = jwtUtil.createJwt("refresh", userEmail, refreshTokenExpiration);
+
 
         response.setHeader("access", access);
         response.addCookie(createCookie("refresh", refresh));
