@@ -30,3 +30,12 @@ spring:
           new_generator_mappings: true
         dialect: org.hibernate.dialect.MySQLDialect
     defer-datasource-initialization: true
+
+  jwt:
+    secret: ${JWT_SECRET_KEY}
+
+token:
+  access:
+    expiration: ${ACCESS_TOKEN_EXPIRATION}
+  refresh:
+    expiration: ${REFRESH_TOKEN_EXPIRATION}

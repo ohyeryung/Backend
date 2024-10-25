@@ -25,6 +25,10 @@ public class User extends Timestamped {
     private String password;
     private String profileImagePath;
 
+    public User(String email) {
+        this.email = email;
+    }
+
     public User(String name, String email, String password) {
         this.name = name;
         this.email = email;
