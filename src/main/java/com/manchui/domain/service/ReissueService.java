@@ -9,6 +9,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,12 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class ReissueService {
+
+    @Value("${token.access.expiration}")
+    private long accessTokenExpiration;
+
+    @Value("${token.refresh.expiration}")
+    private long refreshTokenExpiration;
 
     private final JWTUtil jwtUtil;
 
@@ -49,9 +56,9 @@ public class ReissueService {
             throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
-        String username = jwtUtil.getUsername(refresh);
-        String newAccess = jwtUtil.createJwt("access", username, 600000L);
-        String newRefresh = jwtUtil.createJwt("refresh", username, 86400000L);
+        String userEmail = jwtUtil.getUsername(refresh);
+        String newAccess = jwtUtil.createJwt("access", userEmail, accessTokenExpiration);
+        String newRefresh = jwtUtil.createJwt("refresh", userEmail, refreshTokenExpiration);
 
         response.setHeader("access", newAccess);
         response.addCookie(createCookie("refresh", newRefresh));
