@@ -12,6 +12,7 @@ public enum ErrorCode {
     INVALID_PASSWORD_FORMAT(HttpStatus.BAD_REQUEST, "비밀번호는 영문자, 숫자, 특수문자 중 2가지 이상을 조합해야 합니다."),
     MISSING_EMAIL(HttpStatus.BAD_REQUEST, "아이디를 입력해주세요."),
     MISSING_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호를 입력해주세요."),
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 계정입니다."),
 
     // token
     MISSING_AUTHORIZATION_REFRESH_TOKEN(HttpStatus.BAD_REQUEST, "유효한 Refresh 토큰이 요청에 포함되지 않았습니다."),
