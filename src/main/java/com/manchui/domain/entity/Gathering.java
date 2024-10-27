@@ -85,6 +85,11 @@ public class Gathering extends Timestamped {
     @Builder.Default
     private boolean isClosed = false;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    @Comment("회원 id")
+    private User user;
+
     public GatheringCreateResponse toResponseDto(String filePath) {
         return GatheringCreateResponse.builder()
                 .gatheringId(id)
@@ -105,7 +110,5 @@ public class Gathering extends Timestamped {
                 .build();
 
     }
-
-    // TODO : 유저 연관관계 추가 예정
 
 }
