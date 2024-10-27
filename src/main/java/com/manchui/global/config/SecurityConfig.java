@@ -30,13 +30,15 @@ public class SecurityConfig {
 
         return configuration.getAuthenticationManager();
     }
+
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
+
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         //csrf disable
         http
@@ -53,8 +55,21 @@ public class SecurityConfig {
         //경로별 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/api/auths/signup", "/api/auths/signin", "/api/auths/check-name",
-                                "/api/auths/check-email", "/api/auths/reissue", "/login", "/api/gathering", "/api/gathering/**").permitAll()
+                        .requestMatchers(
+                                "/api/auths/signup",
+                                "/api/auths/signin",
+                                "/api/auths/check-name",
+                                "/api/auths/check-email",
+                                "/api/auths/reissue",
+                                "/login",
+
+                                // swagger 관련 API 문서 경로
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+
+                                // 비회원 조회 경로
+                                "/api/gathering/public/**").permitAll()
                         .anyRequest().authenticated()
                 );
         //로그인 필터 적용
@@ -66,7 +81,6 @@ public class SecurityConfig {
                 .addFilterAfter(new JWTFilter(jwtUtil), LoginFilter.class);
 
 
-
         //세션 설정
         http
                 .sessionManagement((session) -> session
@@ -74,4 +88,5 @@ public class SecurityConfig {
 
         return http.build();
     }
+
 }
