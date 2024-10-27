@@ -1,6 +1,7 @@
 package com.manchui.domain.dto;
 
 import com.manchui.domain.entity.Gathering;
+import com.manchui.domain.entity.User;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -44,8 +45,9 @@ public class GatheringCreateRequest {
     @Size(min = 10, max = 255)
     private String gatheringContent;
 
-    public Gathering toRegisterEntity(LocalDateTime gatheringDate, LocalDateTime dueDate) {
+    public Gathering toRegisterEntity(User user, LocalDateTime gatheringDate, LocalDateTime dueDate) {
         return Gathering.builder()
+                .user(user)
                 .category(category)
                 .groupName(groupName)
                 .gatheringDate(gatheringDate)
