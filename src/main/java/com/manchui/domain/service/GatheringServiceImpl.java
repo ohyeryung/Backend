@@ -4,6 +4,7 @@ import com.manchui.domain.dto.GatheringCreateRequest;
 import com.manchui.domain.dto.GatheringCreateResponse;
 import com.manchui.domain.entity.Gathering;
 import com.manchui.domain.entity.Image;
+import com.manchui.domain.entity.User;
 import com.manchui.domain.repository.GatheringRepository;
 import com.manchui.domain.repository.ImageRepository;
 import com.manchui.global.exception.CustomException;
@@ -28,11 +29,14 @@ public class GatheringServiceImpl implements GatheringService {
 
     private final ImageRepository imageRepository;
 
+    private final UserService userService;
+
     @Override
     @Transactional
-    public GatheringCreateResponse createGathering(GatheringCreateRequest createRequest) {
+    public GatheringCreateResponse createGathering(String email, GatheringCreateRequest createRequest) {
 
-        // TODO : 유저 검증
+        // 0. 유저 객체 검증
+        User user = userService.checkUser(email);
 
         // 1. 날짜 검증
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -57,8 +61,8 @@ public class GatheringServiceImpl implements GatheringService {
             throw new CustomException(ILLEGAL_DATE_DIFFERENCE);
         }
 
-        // 2. 객체 생성 및 저장 (TODO : 유저 객체 추가)
-        Gathering initGathering = createRequest.toRegisterEntity(gatheringDate, dueDate);
+        // 2. 객체 생성 및 저장
+        Gathering initGathering = createRequest.toRegisterEntity(user, gatheringDate, dueDate);
         Gathering gathering = gatheringRepository.save(initGathering);
 
         // 3. 이미지 저장

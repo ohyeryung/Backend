@@ -7,6 +7,6 @@ import org.springframework.stereotype.Service;
 @Service
 public interface GatheringService {
 
-    GatheringCreateResponse createGathering(GatheringCreateRequest createRequest);
+    GatheringCreateResponse createGathering(String email, GatheringCreateRequest createRequest);
 
 }
