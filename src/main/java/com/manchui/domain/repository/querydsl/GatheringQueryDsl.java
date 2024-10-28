@@ -8,4 +8,6 @@ public interface GatheringQueryDsl {
 
     Page<GatheringListResponse> getGatheringListByGuest(Pageable pageable, String query, String location, String date);
 
+    Page<GatheringListResponse> getGatheringListByUser(String email, Pageable pageable, String query, String location, String date);
+
 }

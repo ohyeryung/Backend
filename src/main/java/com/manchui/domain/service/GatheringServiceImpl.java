@@ -101,5 +101,22 @@ public class GatheringServiceImpl implements GatheringService {
         return new GatheringPagingResponse(gatheringRepository.getGatheringListByGuest(pageable, query, location, date));
     }
 
+    /**
+     * 1-1. 모임 찾기 및 목록 조회 (회원)
+     * 작성자: 오예령
+     *
+     * @param email    유저 email
+     * @param pageable 페이징 처리에 필요한 데이터
+     * @param query    검색 키워드
+     * @param location 위치
+     * @param date     날짜
+     * @return 요청한 범위에 대한 모임 List 반환
+     */
+    @Override
+    public GatheringPagingResponse getGatheringByUser(String email, Pageable pageable, String query, String location, String date) {
+
+        return new GatheringPagingResponse(gatheringRepository.getGatheringListByUser(email, pageable, query, location, date));
+    }
+
 
 }

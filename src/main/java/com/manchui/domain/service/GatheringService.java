@@ -13,4 +13,7 @@ public interface GatheringService {
 
     GatheringPagingResponse getGatheringByGuest(Pageable pageable, String query, String location, String date);
 
+    GatheringPagingResponse getGatheringByUser(String email, Pageable pageable, String query, String location, String date);
+
+
 }
