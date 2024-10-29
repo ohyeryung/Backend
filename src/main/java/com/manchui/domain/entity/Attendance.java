@@ -2,6 +2,8 @@ package com.manchui.domain.entity;
 
 import com.manchui.global.entity.Timestamped;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Comment;
@@ -9,8 +11,10 @@ import org.hibernate.annotations.Comment;
 
 @Entity
 @Table(name = "attendance")
+@Builder
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Attendance extends Timestamped {
 
     @Id
