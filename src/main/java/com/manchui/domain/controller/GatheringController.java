@@ -79,17 +79,30 @@ public class GatheringController {
 
     }
 
-    @Operation(summary = "모임 참여)", description = "모임에 참여합니다.")
+    @Operation(summary = "모임 참여", description = "모임에 참여합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "모임 참여 신청 완료되었습니다.",
                     content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "404", description = "해당하는 모임이 없습니다.")
     })
     @PostMapping("/{gatheringId}/attendance")
-    public SuccessResponse<String> joinGathering(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long gatheringId) {
+    public ResponseEntity<SuccessResponse<String>> joinGathering(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long gatheringId) {
 
         gatheringService.joinGathering(userDetails.getUsername(), gatheringId);
-        return SuccessResponse.successWithNoData("모임 참여 신청 완료되었습니다.");
+        return ResponseEntity.status(201).body(SuccessResponse.successWithNoData("모임 참여 신청 완료되었습니다."));
+    }
+
+    @Operation(summary = "모임 좋아요", description = "모임에 좋아요를 누릅니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "모임에 좋아요를 눌렀습니다.",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "404", description = "해당하는 모임이 없습니다.")
+    })
+    @PostMapping("/{gatheringId}/heart")
+    public ResponseEntity<SuccessResponse<String>> heartGathering(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long gatheringId) {
+
+        gatheringService.heartGathering(userDetails.getUsername(), gatheringId);
+        return ResponseEntity.status(201).body(SuccessResponse.successWithNoData("모임에 좋아요를 눌렀습니다."));
     }
 
 }

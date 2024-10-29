@@ -17,4 +17,6 @@ public interface GatheringService {
 
     void joinGathering(String email, Long gatheringId);
 
+    void heartGathering(String email, Long gatheringId);
+
 }
