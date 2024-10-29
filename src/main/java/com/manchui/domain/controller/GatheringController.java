@@ -79,4 +79,11 @@ public class GatheringController {
 
     }
 
+    @PostMapping("/{gatheringId}/attendance")
+    public SuccessResponse joinGathering(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long gatheringId) {
+
+        gatheringService.joinGathering(userDetails.getUsername(), gatheringId);
+        return SuccessResponse.successWithNoData("모임 참여 신청 완료되었습니다.");
+    }
+
 }

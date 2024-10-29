@@ -3,9 +3,11 @@ package com.manchui.domain.service;
 import com.manchui.domain.dto.GatheringCreateRequest;
 import com.manchui.domain.dto.GatheringCreateResponse;
 import com.manchui.domain.dto.GatheringPagingResponse;
+import com.manchui.domain.entity.Attendance;
 import com.manchui.domain.entity.Gathering;
 import com.manchui.domain.entity.Image;
 import com.manchui.domain.entity.User;
+import com.manchui.domain.repository.AttendanceRepository;
 import com.manchui.domain.repository.GatheringRepository;
 import com.manchui.domain.repository.ImageRepository;
 import com.manchui.global.exception.CustomException;
@@ -32,6 +34,8 @@ public class GatheringServiceImpl implements GatheringService {
     private final ImageRepository imageRepository;
 
     private final UserService userService;
+
+    private final AttendanceRepository attendanceRepository;
 
     /**
      * 0. 모임 생성
@@ -116,6 +120,51 @@ public class GatheringServiceImpl implements GatheringService {
     public GatheringPagingResponse getGatheringByUser(String email, Pageable pageable, String query, String location, String date) {
 
         return new GatheringPagingResponse(gatheringRepository.getGatheringListByUser(email, pageable, query, location, date));
+    }
+
+    /**
+     * 2. 모임 참여
+     * 작성자: 오예령
+     *
+     * @param email       유저 email
+     * @param gatheringId 모임 id
+     */
+    @Override
+    public void joinGathering(String email, Long gatheringId) {
+
+        // 0. 유저 검증
+        User user = userService.checkUser(email);
+
+        // 1. 모임 검증
+        Gathering gathering = checkGathering(gatheringId);
+
+        // 1-1. 모임 상태값 검증
+        if (gathering.isCanceled()) {
+            throw new CustomException(GATHERING_CANCELED);
+        } else if (gathering.isClosed()) {
+            throw new CustomException(GATHERING_CLOSED);
+        }
+
+        Attendance attendance = Attendance.builder()
+                .user(user)
+                .gathering(gathering)
+                .build();
+
+        attendanceRepository.save(attendance);
+    }
+
+    /**
+     * 모임 유효성 검증
+     * 작성자: 오예령
+     *
+     * @param gatheringId 모임 id
+     */
+    public Gathering checkGathering(Long gatheringId) {
+
+        return gatheringRepository.findById(gatheringId).orElseThrow(
+                () -> new CustomException(GATHERING_NOT_FOUND)
+        );
+
     }
 
 
