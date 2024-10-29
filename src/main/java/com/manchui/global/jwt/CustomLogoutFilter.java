@@ -33,7 +33,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
         doFilter((HttpServletRequest) request, (HttpServletResponse) response, chain);
     }
 
-    private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+    private void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException, CustomException {
 
         String requestUri = request.getRequestURI();
         String requestMethod = request.getMethod();
@@ -44,45 +44,17 @@ public class CustomLogoutFilter extends GenericFilterBean {
             return;
         }
 
-        String refresh = null;
-        Cookie[] cookies = request.getCookies();
-        for (Cookie cookie : cookies) {
-
-            if (cookie.getName().equals("refresh")) {
-                refresh = cookie.getValue();
-            }
-        }
-
-        if (refresh == null) {
-
-            throw new CustomException(ErrorCode.MISSING_AUTHORIZATION_REFRESH_TOKEN);
-        }
-
         try {
-            jwtUtil.isExpired(refresh);
-        } catch (ExpiredJwtException e) {
+            //access 토큰 검증
+            validateAccessToken(request, response, filterChain);
 
-            throw new CustomException(ErrorCode.MISSING_AUTHORIZATION_REFRESH_TOKEN);
-        } catch (SignatureException | MalformedJwtException e) {
-
-            handleException(response, ErrorCode.INVALID_REFRESH_TOKEN);
+            String refresh = null;
+            //refresh 토큰 검증
+            validateRefreshToken(request, response, refresh);
+        } catch (Exception e) {
             return;
         }
 
-        String category = jwtUtil.getCategory(refresh);
-        if (!category.equals("refresh")) {
-
-            throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
-        }
-
-        String userEmail = jwtUtil.getUsername(refresh);
-        //Redis에 저장된 refresh 토큰 확인
-        if (!redisRefreshTokenService.existsByRefreshToken(userEmail)) {
-
-            throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
-        }
-
-        redisRefreshTokenService.deleteRefreshToken(userEmail);
 
         //Refresh 토큰 쿠키 만료
         Cookie cookie = new Cookie("refresh", null);
@@ -101,6 +73,91 @@ public class CustomLogoutFilter extends GenericFilterBean {
                 "}";
 
         response.getWriter().write(jsonResponse);
+    }
+
+    private void validateRefreshToken(HttpServletRequest request, HttpServletResponse response, String refresh) {
+
+        try {
+            Cookie[] cookies = request.getCookies();
+            for (Cookie cookie : cookies) {
+
+                if (cookie.getName().equals("refresh")) {
+                    refresh = cookie.getValue();
+                }
+            }
+        } catch (NullPointerException e) {
+            refresh = null;
+        }
+
+        //응답 쿠키에 refreshToken이 없는 경우
+        if (refresh == null) {
+            handleException(response, ErrorCode.MISSING_AUTHORIZATION_REFRESH_TOKEN);
+            throw new CustomException(ErrorCode.MISSING_AUTHORIZATION_REFRESH_TOKEN);
+        }
+
+        //refreshToken이 만료된 경우
+        try {
+            jwtUtil.isExpired(refresh);
+        } catch (ExpiredJwtException e) {
+            handleException(response, ErrorCode.MISSING_AUTHORIZATION_REFRESH_TOKEN);
+            throw new CustomException(ErrorCode.MISSING_AUTHORIZATION_REFRESH_TOKEN);
+        } catch (SignatureException | MalformedJwtException e) {
+            handleException(response, ErrorCode.INVALID_REFRESH_TOKEN);
+            throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        String category = jwtUtil.getCategory(refresh);
+        if (!category.equals("refresh")) {
+            handleException(response, ErrorCode.INVALID_REFRESH_TOKEN);
+            throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        String userEmail = jwtUtil.getUsername(refresh);
+        //Redis에 저장된 refresh 토큰 확인
+        if (!redisRefreshTokenService.existsByRefreshToken(userEmail)) {
+            handleException(response, ErrorCode.INVALID_REFRESH_TOKEN);
+            throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        redisRefreshTokenService.deleteRefreshToken(userEmail);
+    }
+
+    private void validateAccessToken(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+
+        String accessToken = request.getHeader("access");
+
+        //응답 header에 accessToken이 없는 경우
+        if (accessToken == null) {
+
+            filterChain.doFilter(request, response);
+            handleException(response, ErrorCode.MISSING_AUTHORIZATION_ACCESS_TOKEN);
+            throw new CustomException(ErrorCode.MISSING_AUTHORIZATION_ACCESS_TOKEN);
+        }
+
+        //accessToken이 만료된 경우
+        try {
+            jwtUtil.isExpired(accessToken);
+        } catch (ExpiredJwtException e) {
+            handleException(response, ErrorCode.EXPIRED_JWT);
+            throw new CustomException(ErrorCode.EXPIRED_JWT);
+        }
+
+        String category = jwtUtil.getCategory(accessToken);
+
+        if (!category.equals("access")) {
+            handleException(response, ErrorCode.INVALID_ACCESS_TOKEN);
+            throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
+        }
+
+        String userEmail = jwtUtil.getUsername(accessToken);
+        //Redis에 저장된 access 토큰 확인
+        if (!redisRefreshTokenService.existsByAccessToken(userEmail)) {
+            handleException(response, ErrorCode.INVALID_ACCESS_TOKEN);
+            throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
+        }
+
+        redisRefreshTokenService.deleteAccessToken(accessToken);
     }
 
     // 예외 처리 응답을 직접 설정하는 메서드
