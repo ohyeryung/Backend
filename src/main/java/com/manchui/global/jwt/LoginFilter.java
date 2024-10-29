@@ -97,8 +97,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String access = jwtUtil.createJwt("access", userEmail, accessTokenExpiration);
         String refresh = jwtUtil.createJwt("refresh", userEmail, refreshTokenExpiration);
 
-        //Redis에 refresh 저장
+        //Redis에 refresh, access 저장
         redisRefreshTokenService.saveRefreshToken(userEmail, refresh, refreshTokenExpiration);
+        redisRefreshTokenService.saveAccessToken(userEmail, access, accessTokenExpiration);
 
         response.setHeader("access", access);
         response.addCookie(createCookie("refresh", refresh));
