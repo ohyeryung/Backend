@@ -63,7 +63,7 @@ public class GatheringController {
 
     @Operation(summary = "모임 목록 조회)", description = "회원이 요청하는 모임의 목록을 반환합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "비회원이 요청한 목록이 반환되었습니다.",
+            @ApiResponse(responseCode = "200", description = "회원이 요청한 목록이 반환되었습니다.",
                     content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "400", description = "요청 값을 확인해주세요."),
             @ApiResponse(responseCode = "404", description = "해당하는 모임이 없습니다.")
@@ -79,8 +79,14 @@ public class GatheringController {
 
     }
 
+    @Operation(summary = "모임 참여)", description = "모임에 참여합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "모임 참여 신청 완료되었습니다.",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "404", description = "해당하는 모임이 없습니다.")
+    })
     @PostMapping("/{gatheringId}/attendance")
-    public SuccessResponse joinGathering(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long gatheringId) {
+    public SuccessResponse<String> joinGathering(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long gatheringId) {
 
         gatheringService.joinGathering(userDetails.getUsername(), gatheringId);
         return SuccessResponse.successWithNoData("모임 참여 신청 완료되었습니다.");
