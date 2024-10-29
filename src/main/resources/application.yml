@@ -16,6 +16,13 @@ spring:
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  # 이미지 크기 제한
+  servlet:
+    multipart:
+      maxFileSize: ${MAX_FILE_SIZE}
+      maxRequestSize: ${MAX_REQUEST_SIZE}
+      enabled: true
+
   jpa:
     hibernate:
       ddl-auto: create # 로컬 개발 환경에서는 create 사용
@@ -39,3 +46,16 @@ token:
     expiration: ${ACCESS_TOKEN_EXPIRATION}
   refresh:
     expiration: ${REFRESH_TOKEN_EXPIRATION}
+
+# S3 이미지 설정
+cloud:
+  aws:
+    region:
+      static: ${AWS_REGION}
+    stack:
+      auto: false
+    s3:
+      bucket: ${BUCKET_NAME}
+    credentials:
+      access-key: ${ACCESS_KEY}
+      secret-key: ${SECRET_KEY}

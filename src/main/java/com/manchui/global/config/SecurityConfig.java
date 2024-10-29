@@ -54,7 +54,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/api/auths/signup", "/api/auths/signin", "/api/auths/check-name",
-                                "/api/auths/check-email", "/api/auths/reissue", "/login").permitAll()
+                                "/api/auths/check-email", "/api/auths/reissue", "/login", "/api/gathering", "/api/gathering/**").permitAll()
                         .anyRequest().authenticated()
                 );
         //로그인 필터 적용
