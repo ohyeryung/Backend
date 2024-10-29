@@ -3,12 +3,10 @@ package com.manchui.domain.service;
 import com.manchui.domain.dto.GatheringCreateRequest;
 import com.manchui.domain.dto.GatheringCreateResponse;
 import com.manchui.domain.dto.GatheringPagingResponse;
-import com.manchui.domain.entity.Attendance;
-import com.manchui.domain.entity.Gathering;
-import com.manchui.domain.entity.Image;
-import com.manchui.domain.entity.User;
+import com.manchui.domain.entity.*;
 import com.manchui.domain.repository.AttendanceRepository;
 import com.manchui.domain.repository.GatheringRepository;
+import com.manchui.domain.repository.HeartRepository;
 import com.manchui.domain.repository.ImageRepository;
 import com.manchui.global.exception.CustomException;
 import jakarta.transaction.Transactional;
@@ -36,6 +34,8 @@ public class GatheringServiceImpl implements GatheringService {
     private final UserService userService;
 
     private final AttendanceRepository attendanceRepository;
+
+    private final HeartRepository heartRepository;
 
     /**
      * 0. 모임 생성
@@ -130,6 +130,7 @@ public class GatheringServiceImpl implements GatheringService {
      * @param gatheringId 모임 id
      */
     @Override
+    @Transactional
     public void joinGathering(String email, Long gatheringId) {
 
         // 0. 유저 검증
@@ -151,6 +152,43 @@ public class GatheringServiceImpl implements GatheringService {
                 .build();
 
         attendanceRepository.save(attendance);
+    }
+
+    /**
+     * 3. 모임 좋아요
+     * 작성자: 오예령
+     *
+     * @param email       유저 email
+     * @param gatheringId 모임 id
+     */
+    @Override
+    @Transactional
+    public void heartGathering(String email, Long gatheringId) {
+
+        // 0. 유저 검증
+        User user = userService.checkUser(email);
+
+        // 1. 모임 검증
+        Gathering gathering = checkGathering(gatheringId);
+
+        // 1-1. 모임 상태값 검증
+        if (gathering.isCanceled()) {
+            throw new CustomException(GATHERING_CANCELED);
+        } else if (gathering.isClosed()) {
+            throw new CustomException(GATHERING_CLOSED);
+        }
+
+        // 이미 좋아요 표시를 한 모임이라면 예외 처리
+        heartRepository.findByUserAndGathering(user.getId(), gatheringId).orElseThrow(
+                () -> new CustomException(ALREADY_HEART_GATHERING)
+        );
+
+        Heart heart = Heart.builder()
+                .gathering(gathering)
+                .user(user)
+                .build();
+
+        heartRepository.save(heart);
     }
 
     /**
