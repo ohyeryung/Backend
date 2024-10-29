@@ -15,5 +15,6 @@ public interface GatheringService {
 
     GatheringPagingResponse getGatheringByUser(String email, Pageable pageable, String query, String location, String date);
 
+    void joinGathering(String email, Long gatheringId);
 
 }
