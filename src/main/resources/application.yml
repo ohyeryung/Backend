@@ -47,6 +47,11 @@ token:
   refresh:
     expiration: ${REFRESH_TOKEN_EXPIRATION}
 
+  redis:
+    data:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+
 # S3 이미지 설정
 cloud:
   aws:
