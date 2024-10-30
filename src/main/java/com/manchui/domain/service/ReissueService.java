@@ -17,14 +17,12 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ReissueService {
 
-    @Value("${token.access.expiration}")
-    private long accessTokenExpiration;
-
-    @Value("${token.refresh.expiration}")
-    private long refreshTokenExpiration;
-
     private final JWTUtil jwtUtil;
     private final RedisRefreshTokenService redisRefreshTokenService;
+    @Value("${token.access.expiration}")
+    private long accessTokenExpiration;
+    @Value("${token.refresh.expiration}")
+    private long refreshTokenExpiration;
 
     public ResponseEntity<SuccessResponse<Void>> reissue(HttpServletRequest request, HttpServletResponse response) {
 
@@ -67,7 +65,7 @@ public class ReissueService {
         String newRefresh = jwtUtil.createJwt("refresh", userEmail, refreshTokenExpiration);
 
         redisRefreshTokenService.deleteRefreshToken(userEmail);
-        redisRefreshTokenService.saveRefreshToken(userEmail,newRefresh, refreshTokenExpiration);
+        redisRefreshTokenService.saveRefreshToken(userEmail, newRefresh, refreshTokenExpiration);
 
         response.setHeader("Authorization", "Bearer " + newAccess);
         response.addCookie(createCookie("refresh", newRefresh));
@@ -78,11 +76,12 @@ public class ReissueService {
     private Cookie createCookie(String key, String value) {
 
         Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(24*60*60);
+        cookie.setMaxAge(24 * 60 * 60);
         //cookie.setSecure(true);
         //cookie.setPath("/");
         cookie.setHttpOnly(true);
 
         return cookie;
     }
+
 }

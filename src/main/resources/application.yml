@@ -1,12 +1,11 @@
-# 1. 기본값 프로파일
+# 로컬 환경 설정
 spring:
   application:
     name: manchui
 
   profiles:
-    default: local # (로컬로 지정)
+    default: local
 
-  # .env import
   config:
     import: optional:file:.env[.properties]
 
@@ -25,18 +24,69 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create # 로컬 개발 환경에서는 create 사용
+      ddl-auto: create
     show-sql: true
     properties:
       hibernate:
-        # 테이블명 소문자 + snake_case 설정
-        naming:
-        physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
-        format_sql: true
-        id:
-          new_generator_mappings: true
         dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
     defer-datasource-initialization: true
+
+  jwt:
+    secret: ${JWT_SECRET_KEY}
+
+token:
+  access:
+    expiration: ${ACCESS_TOKEN_EXPIRATION}
+  refresh:
+    expiration: ${REFRESH_TOKEN_EXPIRATION}
+
+cloud:
+  aws:
+    region:
+      static: ${AWS_REGION}
+    stack:
+      auto: false
+    s3:
+      bucket: ${BUCKET_NAME}
+    credentials:
+      access-key: ${ACCESS_KEY}
+      secret-key: ${SECRET_KEY}
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    
+---
+
+# 배포 환경 설정
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update # 배포 환경에서는 update 사용
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+    defer-datasource-initialization: true
+
+  servlet:
+    multipart:
+      maxFileSize: ${MAX_FILE_SIZE}
+      maxRequestSize: ${MAX_REQUEST_SIZE}
 
   jwt:
     secret: ${JWT_SECRET_KEY}

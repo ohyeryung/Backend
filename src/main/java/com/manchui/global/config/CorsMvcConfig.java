@@ -11,6 +11,12 @@ public class CorsMvcConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry corsRegistry) {
 
         corsRegistry.addMapping("/**")
-                .allowedOrigins("http://localhost:3000");
+                .allowedOrigins("http://localhost:3000", "http://13.125.37.151:8080") // 여러 원본을 하나의 호출로
+                .allowedMethods("*")
+                .allowedHeaders("*")
+                .exposedHeaders("access")
+                .allowCredentials(true);
     }
+
 }
+
