@@ -2,14 +2,17 @@ package com.manchui.domain.service;
 
 import com.manchui.domain.dto.GatheringCreateRequest;
 import com.manchui.domain.dto.GatheringCreateResponse;
+import com.manchui.domain.dto.GatheringPagingResponse;
 import com.manchui.domain.entity.Gathering;
 import com.manchui.domain.entity.Image;
+import com.manchui.domain.entity.User;
 import com.manchui.domain.repository.GatheringRepository;
 import com.manchui.domain.repository.ImageRepository;
 import com.manchui.global.exception.CustomException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -28,11 +31,22 @@ public class GatheringServiceImpl implements GatheringService {
 
     private final ImageRepository imageRepository;
 
+    private final UserService userService;
+
+    /**
+     * 0. 모임 생성
+     * 작성자 : 오예령
+     *
+     * @param email         유저 email
+     * @param createRequest 모임 생성 시 필요한 데이터 집합
+     * @return 생성된 모임 정보 반환
+     */
     @Override
     @Transactional
-    public GatheringCreateResponse createGathering(GatheringCreateRequest createRequest) {
+    public GatheringCreateResponse createGathering(String email, GatheringCreateRequest createRequest) {
 
-        // TODO : 유저 검증
+        // 0. 유저 객체 검증
+        User user = userService.checkUser(email);
 
         // 1. 날짜 검증
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -57,8 +71,8 @@ public class GatheringServiceImpl implements GatheringService {
             throw new CustomException(ILLEGAL_DATE_DIFFERENCE);
         }
 
-        // 2. 객체 생성 및 저장 (TODO : 유저 객체 추가)
-        Gathering initGathering = createRequest.toRegisterEntity(gatheringDate, dueDate);
+        // 2. 객체 생성 및 저장
+        Gathering initGathering = createRequest.toRegisterEntity(user, gatheringDate, dueDate);
         Gathering gathering = gatheringRepository.save(initGathering);
 
         // 3. 이미지 저장
@@ -70,5 +84,39 @@ public class GatheringServiceImpl implements GatheringService {
 
         return gathering.toResponseDto(image.getFilePath());
     }
+
+    /**
+     * 1. 모임 찾기 및 목록 조회 (비회원)
+     * 작성자: 오예령
+     *
+     * @param pageable 페이징 처리에 필요한 데이터
+     * @param query    검색 키워드
+     * @param location 위치
+     * @param date     날짜
+     * @return 요청한 범위에 대한 모임 List 반환
+     */
+    @Override
+    public GatheringPagingResponse getGatheringByGuest(Pageable pageable, String query, String location, String date) {
+
+        return new GatheringPagingResponse(gatheringRepository.getGatheringListByGuest(pageable, query, location, date));
+    }
+
+    /**
+     * 1-1. 모임 찾기 및 목록 조회 (회원)
+     * 작성자: 오예령
+     *
+     * @param email    유저 email
+     * @param pageable 페이징 처리에 필요한 데이터
+     * @param query    검색 키워드
+     * @param location 위치
+     * @param date     날짜
+     * @return 요청한 범위에 대한 모임 List 반환
+     */
+    @Override
+    public GatheringPagingResponse getGatheringByUser(String email, Pageable pageable, String query, String location, String date) {
+
+        return new GatheringPagingResponse(gatheringRepository.getGatheringListByUser(email, pageable, query, location, date));
+    }
+
 
 }
