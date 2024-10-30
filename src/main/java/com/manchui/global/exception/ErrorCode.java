@@ -31,6 +31,8 @@ public enum ErrorCode {
     ALREADY_JOIN_GATHERING(HttpStatus.BAD_REQUEST, "이미 참여 신청된 모임입니다."),
     ALREADY_HEART_GATHERING(HttpStatus.BAD_REQUEST, "이미 좋아요를 누른 모임입니다."),
     ATTENDANCE_NOT_EXIST(HttpStatus.BAD_REQUEST, "참여한 모임만 취소 가능합니다."),
+    ALREADY_HEART_GATHERING(HttpStatus.BAD_REQUEST, "이미 좋아요를 누른 모임입니다."),
+
 
     // image
     ILLEGAL_EMPTY_FILE(HttpStatus.BAD_REQUEST, "이미지 파일은 필수 입력 값입니다."),
