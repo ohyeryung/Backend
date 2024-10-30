@@ -1,9 +1,6 @@
 package com.manchui.domain.controller;
 
-import com.manchui.domain.dto.CustomUserDetails;
-import com.manchui.domain.dto.GatheringCreateRequest;
-import com.manchui.domain.dto.GatheringCreateResponse;
-import com.manchui.domain.dto.GatheringPagingResponse;
+import com.manchui.domain.dto.*;
 import com.manchui.domain.service.GatheringService;
 import com.manchui.global.response.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -118,4 +115,30 @@ public class GatheringController {
         return ResponseEntity.status(200).body(SuccessResponse.successWithNoData("모임 참여 신청이 취소되었습니다."));
     }
 
+    @Operation(summary = "모임 상세 조회 (비회원)", description = "비회원이 요청하는 모임의 상세 내용을 반환합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "비회원이 요청한 모임의 상세 내용이 반환되었습니다.",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "404", description = "해당하는 모임이 없습니다.")
+    })
+    @GetMapping("/public/{gatheringId}")
+    public ResponseEntity<SuccessResponse<GatheringInfoResponse>> getGatheringInfoByGuest(@PathVariable Long gatheringId) {
+
+        return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getGatheringInfoByGuest(gatheringId)));
+    }
+
+    @Operation(summary = "모임 상세 조회 (회원)", description = "회원이 요청하는 모임의 상세 내용을 반환합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "회원이 요청한 모임의 상세 내용이 반환되었습니다.",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "404", description = "해당하는 모임이 없습니다.")
+    })
+    @GetMapping("/{gatheringId}")
+    public ResponseEntity<SuccessResponse<GatheringInfoResponse>> getGatheringInfoByUser(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                                         @PathVariable Long gatheringId) {
+
+        return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getGatheringInfoByUser(userDetails.getUsername(), gatheringId)));
+    }
+
 }
+
