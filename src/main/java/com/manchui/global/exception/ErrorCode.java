@@ -16,7 +16,8 @@ public enum ErrorCode {
 
     // token
     MISSING_AUTHORIZATION_REFRESH_TOKEN(HttpStatus.BAD_REQUEST, "유효한 Refresh 토큰이 요청에 포함되지 않았습니다."),
-    EXPIRED_JWT(HttpStatus.UNAUTHORIZED, "만료된 토큰 입니다."),
+    MISSING_AUTHORIZATION_ACCESS_TOKEN(HttpStatus.BAD_REQUEST, "유효한 Access 토큰이 요청에 포함되지 않았습니다."),
+    EXPIRED_JWT(HttpStatus.UNAUTHORIZED,"만료된 토큰 입니다."),
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 Refresh 토큰입니다."),
     INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 Access 토큰입니다."),
 
