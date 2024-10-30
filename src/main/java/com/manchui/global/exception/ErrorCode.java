@@ -30,6 +30,7 @@ public enum ErrorCode {
     GATHERING_CLOSED(HttpStatus.BAD_REQUEST, "모집 마감된 모임은 참여할 수 없습니다."),
     ALREADY_HEART_GATHERING(HttpStatus.BAD_REQUEST, "이미 좋아요를 누른 모임입니다."),
 
+
     // image
     ILLEGAL_EMPTY_FILE(HttpStatus.BAD_REQUEST, "이미지 파일은 필수 입력 값입니다."),
     WRONG_TYPE_IMAGE(HttpStatus.BAD_REQUEST, "유효하지 않은 이미지 파일형식 입니다."),

@@ -61,7 +61,7 @@ public class GatheringController {
 
     }
 
-    @Operation(summary = "모임 목록 조회)", description = "회원이 요청하는 모임의 목록을 반환합니다.")
+    @Operation(summary = "모임 목록 조회 (회원)", description = "회원이 요청하는 모임의 목록을 반환합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "회원이 요청한 목록이 반환되었습니다.",
                     content = @Content(mediaType = "application/json")),

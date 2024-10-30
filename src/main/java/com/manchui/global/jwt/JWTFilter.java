@@ -1,9 +1,11 @@
 package com.manchui.global.jwt;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.manchui.domain.dto.CustomUserDetails;
 import com.manchui.domain.entity.User;
 import com.manchui.global.exception.CustomException;
 import com.manchui.global.exception.ErrorCode;
+import com.manchui.global.response.ErrorResponse;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -27,26 +29,31 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        String accessToken = request.getHeader("access");
+        String authorization = request.getHeader("Authorization");
 
-        if (accessToken == null) {
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
 
             filterChain.doFilter(request, response);
-
             return;
         }
 
-        try {
-            jwtUtil.isExpired(accessToken);
-        } catch (ExpiredJwtException e) {
+        //Bearer 부분 제거 후 순수 토큰만 획득
+        String accessToken= authorization.split(" ")[1];
+        if (accessToken == null) {
+            handleException(response, ErrorCode.MISSING_AUTHORIZATION_ACCESS_TOKEN);
+            throw new CustomException(ErrorCode.MISSING_AUTHORIZATION_ACCESS_TOKEN);
+        }
 
+        //토큰 소멸 시간 검증
+        if (jwtUtil.isExpired(accessToken)) {
+            handleException(response, ErrorCode.EXPIRED_JWT);
             throw new CustomException(ErrorCode.EXPIRED_JWT);
         }
 
         String category = jwtUtil.getCategory(accessToken);
 
         if (!category.equals("access")) {
-
+            handleException(response, ErrorCode.INVALID_ACCESS_TOKEN);
             throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
         }
 
@@ -59,5 +66,25 @@ public class JWTFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
         filterChain.doFilter(request, response);
+    }
+
+    // 예외 처리 응답을 직접 설정하는 메서드
+    private void handleException(HttpServletResponse response, ErrorCode errorCode) {
+        response.setStatus(errorCode.getHttpStatus().value());
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        ErrorResponse errorResponse = ErrorResponse
+                .create()
+                .message(errorCode.getMessage())
+                .httpStatus(errorCode.getHttpStatus());
+
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            String jsonResponse = objectMapper.writeValueAsString(errorResponse);
+            response.getWriter().write(jsonResponse);
+        } catch (IOException e) {
+            log.error("Failed to write error response", e);
+        }
     }
 }
