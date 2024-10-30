@@ -25,11 +25,14 @@ public enum ErrorCode {
     ILLEGAL_DUE_DATE(HttpStatus.BAD_REQUEST, "마감 기한은 최소 하루 이상이어야 합니다."),
     ILLEGAL_GATHERING_DATE(HttpStatus.BAD_REQUEST, "모임 날짜는 현재 시점으로부터 최소 24시간 이후여야 합니다."),
     ILLEGAL_DATE_DIFFERENCE(HttpStatus.BAD_REQUEST, "모임 날짜와 마감 일자는 최소 5시간 차이가 있어야 합니다."),
+    GATHERING_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 모임입니다."),
+    GATHERING_CANCELED(HttpStatus.BAD_REQUEST, "취소된 모임은 참여할 수 없습니다."),
+    GATHERING_CLOSED(HttpStatus.BAD_REQUEST, "모집 마감된 모임은 참여할 수 없습니다."),
 
     // image
     ILLEGAL_EMPTY_FILE(HttpStatus.BAD_REQUEST, "이미지 파일은 필수 입력 값입니다."),
     WRONG_TYPE_IMAGE(HttpStatus.BAD_REQUEST, "유효하지 않은 이미지 파일형식 입니다."),
-    FAILED_UPLOAD_IMAGE(HttpStatus.BAD_REQUEST,  "이미지 업로드에 실패했습니다.");
+    FAILED_UPLOAD_IMAGE(HttpStatus.BAD_REQUEST, "이미지 업로드에 실패했습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;
