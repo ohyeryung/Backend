@@ -101,7 +101,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         redisRefreshTokenService.saveRefreshToken(userEmail, refresh, refreshTokenExpiration);
         redisRefreshTokenService.saveAccessToken(userEmail, access, accessTokenExpiration);
 
-        response.setHeader("access", access);
+        response.setHeader("Authorization", "Bearer " + access);
         response.addCookie(createCookie("refresh", refresh));
 
         response.setStatus(HttpServletResponse.SC_OK);

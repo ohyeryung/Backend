@@ -125,12 +125,21 @@ public class CustomLogoutFilter extends GenericFilterBean {
     private void validateAccessToken(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String accessToken = request.getHeader("access");
+        String authorization = request.getHeader("Authorization");
+
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+
+            filterChain.doFilter(request, response);
+            handleException(response, ErrorCode.INVALID_ACCESS_TOKEN);
+            throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
+        }
+
+        //Bearer 부분 제거 후 순수 토큰만 획득
+        String accessToken= authorization.split(" ")[1];
 
         //응답 header에 accessToken이 없는 경우
         if (accessToken == null) {
 
-            filterChain.doFilter(request, response);
             handleException(response, ErrorCode.MISSING_AUTHORIZATION_ACCESS_TOKEN);
             throw new CustomException(ErrorCode.MISSING_AUTHORIZATION_ACCESS_TOKEN);
         }
@@ -141,6 +150,9 @@ public class CustomLogoutFilter extends GenericFilterBean {
         } catch (ExpiredJwtException e) {
             handleException(response, ErrorCode.EXPIRED_JWT);
             throw new CustomException(ErrorCode.EXPIRED_JWT);
+        } catch (SignatureException e) {
+            handleException(response, ErrorCode.INVALID_ACCESS_TOKEN);
+            throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
         }
 
         String category = jwtUtil.getCategory(accessToken);
@@ -157,7 +169,7 @@ public class CustomLogoutFilter extends GenericFilterBean {
             throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
         }
 
-        redisRefreshTokenService.deleteAccessToken(accessToken);
+        redisRefreshTokenService.deleteAccessToken(userEmail);
     }
 
     // 예외 처리 응답을 직접 설정하는 메서드
