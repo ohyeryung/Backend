@@ -1,8 +1,6 @@
 package com.manchui.domain.service;
 
-import com.manchui.domain.dto.GatheringCreateRequest;
-import com.manchui.domain.dto.GatheringCreateResponse;
-import com.manchui.domain.dto.GatheringPagingResponse;
+import com.manchui.domain.dto.*;
 import com.manchui.domain.entity.*;
 import com.manchui.domain.repository.AttendanceRepository;
 import com.manchui.domain.repository.GatheringRepository;
@@ -17,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static com.manchui.global.exception.ErrorCode.*;
@@ -197,9 +197,9 @@ public class GatheringServiceImpl implements GatheringService {
         }
 
         // 이미 좋아요 표시를 한 모임이라면 예외 처리
-        heartRepository.findByUserAndGathering(user.getId(), gatheringId).orElseThrow(
-                () -> new CustomException(ALREADY_HEART_GATHERING)
-        );
+        if (heartRepository.findByUserAndGathering(user, gathering).isPresent()) {
+            throw new CustomException(ALREADY_HEART_GATHERING);
+        }
 
         Heart heart = Heart.builder()
                 .gathering(gathering)
@@ -230,6 +230,87 @@ public class GatheringServiceImpl implements GatheringService {
         // 참여 내역의 실제 데이터를 삭제하지 않고 deletedAt 필드에 삭제된 시점만 기록
         byUserAndGathering.softDelete();
 
+    }
+
+    /**
+     * 5. 모임 상세 조회 (비회원)
+     * 작성자: 오예령
+     *
+     * @param gatheringId 모임 id
+     * @return 해당하는 모임의 상세 내용
+     */
+    @Override
+    public GatheringInfoResponse getGatheringInfoByGuest(Long gatheringId) {
+
+        Gathering gathering = checkGathering(gatheringId);
+
+        List<UserInfo> userInfoList = new ArrayList<>();
+        List<ReviewInfo> reviewInfoList = new ArrayList<>();
+
+        Image image = imageRepository.findByGatheringId(gatheringId);
+
+        // 모임 참석자 리스트 조회
+        List<Attendance> byGathering = attendanceRepository.findByGathering(gathering);
+
+        // 참여자 인원 count
+        int currentUsers = byGathering.size();
+        log.info("currentUsers : {}", currentUsers);
+
+        // 참석자 리스트를 userInfo 리스트로 변환
+        for (Attendance attendance : byGathering) {
+            String name = attendance.getUser().getName();
+            String profileImagePath = attendance.getUser().getProfileImagePath();
+            UserInfo userInfo = new UserInfo(name, profileImagePath);
+            userInfoList.add(userInfo);
+        }
+
+        // TODO: 후기 리스트 추가
+
+        return new GatheringInfoResponse(gathering, image.getFilePath(), currentUsers, userInfoList, reviewInfoList);
+    }
+
+
+    /**
+     * 4-1. 모임 상세 조회 (회원)
+     *
+     * @param email       유저 email
+     * @param gatheringId 모임 id
+     * @return 해당하는 모임의 상세 내용
+     */
+    @Override
+    public GatheringInfoResponse getGatheringInfoByUser(String email, Long gatheringId) {
+
+        User user = userService.checkUser(email);
+        Gathering gathering = checkGathering(gatheringId);
+
+        List<UserInfo> userInfoList = new ArrayList<>();
+        List<ReviewInfo> reviewInfoList = new ArrayList<>();
+
+        Image image = imageRepository.findByGatheringId(gatheringId);
+
+        // 모임 참석자 리스트 조회
+        List<Attendance> byGathering = attendanceRepository.findByGathering(gathering);
+
+        Optional<Heart> byUserAndGatheringId = heartRepository.findByUserAndGathering(user, gathering);
+
+        boolean isHearted = byUserAndGatheringId.isPresent();
+        log.info("isHearted: {}", isHearted);
+
+        // 참여자 인원 count
+        int currentUsers = byGathering.size();
+        log.info("currentUsers : {}", currentUsers);
+
+        // 참석자 리스트를 userInfo 리스트로 변환
+        for (Attendance attendance : byGathering) {
+            String name = attendance.getUser().getName();
+            String profileImagePath = attendance.getUser().getProfileImagePath();
+            UserInfo userInfo = new UserInfo(name, profileImagePath);
+            userInfoList.add(userInfo);
+        }
+
+        // TODO: 후기 리스트 추가
+
+        return new GatheringInfoResponse(gathering, image.getFilePath(), currentUsers, isHearted, userInfoList, reviewInfoList);
     }
 
     /**
