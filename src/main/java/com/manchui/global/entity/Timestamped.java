@@ -42,7 +42,14 @@ public abstract class Timestamped {
 
     // Soft delete 메서드, 실제로 데이터를 삭제하지 않고 deletedAt 필드에 삭제된 시점만 기록
     public void softDelete() {
+
         this.deletedAt = LocalDateTime.now();
+    }
+
+    // 모임 참여 취소했다가 재참여하는 경우 사용됨
+    public void restore() {
+
+        this.deletedAt = null;
     }
 
 }
