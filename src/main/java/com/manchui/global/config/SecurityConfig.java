@@ -91,9 +91,11 @@ public class SecurityConfig {
         http
                 .addFilterAfter(new JWTFilter(jwtUtil), LoginFilter.class);
 
+
         //커스텀 로그아웃 필터 적용
         http
                 .addFilterBefore(new CustomLogoutFilter(jwtUtil, redisRefreshTokenService), LogoutFilter.class);
+
 
         //세션 설정
         http

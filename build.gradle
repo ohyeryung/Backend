@@ -54,12 +54,12 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 
-	//Redis 의존성
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	  //Redis 의존성
+  	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
-	// aws
-	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
-	implementation 'com.amazonaws:aws-java-sdk-s3'
+  	// aws
+	  implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+  	implementation 'com.amazonaws:aws-java-sdk-s3'
 
     // querydsl
     implementation "com.querydsl:querydsl-jpa:5.0.0:jakarta"

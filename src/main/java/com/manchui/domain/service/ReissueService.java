@@ -69,7 +69,7 @@ public class ReissueService {
         redisRefreshTokenService.deleteRefreshToken(userEmail);
         redisRefreshTokenService.saveRefreshToken(userEmail,newRefresh, refreshTokenExpiration);
 
-        response.setHeader("access", newAccess);
+        response.setHeader("Authorization", "Bearer " + newAccess);
         response.addCookie(createCookie("refresh", newRefresh));
 
         return ResponseEntity.ok().body(SuccessResponse.successWithNoData("refresh 토큰 재발급 성공"));
