@@ -2,6 +2,7 @@ package com.manchui.global.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.manchui.domain.dto.LoginDTO;
+import com.manchui.domain.service.RedisRefreshTokenService;
 import com.manchui.global.exception.ErrorCode;
 import com.manchui.global.response.ErrorResponse;
 import jakarta.servlet.FilterChain;
@@ -11,7 +12,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,6 +19,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
 
 import java.io.IOException;
@@ -28,21 +29,25 @@ import java.util.Set;
 @Slf4j
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
-    @Value("${token.access.expiration}")
-    private long accessTokenExpiration;
+    private Long accessTokenExpiration;
 
-    @Value("${token.refresh.expiration}")
-    private long refreshTokenExpiration;
+    private Long refreshTokenExpiration;
 
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
     private final Validator validator;
+    private final RedisRefreshTokenService redisRefreshTokenService;
 
-    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, Validator validator) {
+    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil,
+                       Validator validator, RedisRefreshTokenService redisRefreshTokenService
+                        ,Long accessTokenExpiration, Long refreshTokenExpiration) {
         super();
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.validator = validator;
+        this.redisRefreshTokenService = redisRefreshTokenService;
+        this.accessTokenExpiration = accessTokenExpiration;
+        this.refreshTokenExpiration = refreshTokenExpiration;
         setFilterProcessesUrl("/api/auths/signin");  // 필터의 URL 매핑 설정
     }
 
@@ -92,6 +97,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String access = jwtUtil.createJwt("access", userEmail, accessTokenExpiration);
         String refresh = jwtUtil.createJwt("refresh", userEmail, refreshTokenExpiration);
 
+        //Redis에 refresh, access 저장
+        redisRefreshTokenService.saveRefreshToken(userEmail, refresh, refreshTokenExpiration);
+        redisRefreshTokenService.saveAccessToken(userEmail, access, accessTokenExpiration);
 
         response.setHeader("access", access);
         response.addCookie(createCookie("refresh", refresh));
