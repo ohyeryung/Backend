@@ -52,9 +52,11 @@ public class GatheringController {
     public ResponseEntity<SuccessResponse<GatheringPagingResponse>> getGatheringByGuest(@PageableDefault Pageable pageable,
                                                                                         @RequestParam String query,
                                                                                         @RequestParam String location,
-                                                                                        @RequestParam String date) {
+                                                                                        @RequestParam String startDate,
+                                                                                        @RequestParam String endDate,
+                                                                                        @RequestParam String category) {
 
-        return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getGatheringByGuest(pageable, query, location, date)));
+        return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getGatheringByGuest(pageable, query, location, startDate, endDate, category)));
 
     }
 
@@ -70,9 +72,11 @@ public class GatheringController {
                                                                                        @PageableDefault Pageable pageable,
                                                                                        @RequestParam String query,
                                                                                        @RequestParam String location,
-                                                                                       @RequestParam String date) {
+                                                                                       @RequestParam String startDate,
+                                                                                       @RequestParam String endDate,
+                                                                                       @RequestParam String category) {
 
-        return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getGatheringByUser(userDetails.getUsername(), pageable, query, location, date)));
+        return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getGatheringByUser(userDetails.getUsername(), pageable, query, location, startDate, endDate, category)));
 
     }
 

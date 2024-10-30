@@ -12,9 +12,9 @@ public interface GatheringService {
 
     GatheringCreateResponse createGathering(String email, GatheringCreateRequest createRequest);
 
-    GatheringPagingResponse getGatheringByGuest(Pageable pageable, String query, String location, String date);
+    GatheringPagingResponse getGatheringByGuest(Pageable pageable, String query, String location, String startDate, String endDate, String category);
 
-    GatheringPagingResponse getGatheringByUser(String email, Pageable pageable, String query, String location, String date);
+    GatheringPagingResponse getGatheringByUser(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category);
 
     void joinGathering(String email, Long gatheringId);
 
