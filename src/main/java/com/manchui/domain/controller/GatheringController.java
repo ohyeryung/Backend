@@ -105,4 +105,17 @@ public class GatheringController {
         return ResponseEntity.status(201).body(SuccessResponse.successWithNoData("모임에 좋아요를 눌렀습니다."));
     }
 
+    @Operation(summary = "모임 참여 신청 취소", description = "모임에 참여했던 신청을 취소합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "모임 참여 신청이 취소되었습니다.",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "404", description = "해당하는 모임이 없습니다.")
+    })
+    @DeleteMapping("/{gatheringId}/cancel")
+    public ResponseEntity<SuccessResponse<String>> joinCancelGathering(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long gatheringId) {
+
+        gatheringService.joinCancelGathering(userDetails.getUsername(), gatheringId);
+        return ResponseEntity.status(200).body(SuccessResponse.successWithNoData("모임 참여 신청이 취소되었습니다."));
+    }
+
 }

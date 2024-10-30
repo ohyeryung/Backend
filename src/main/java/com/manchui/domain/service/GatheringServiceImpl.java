@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 import static com.manchui.global.exception.ErrorCode.*;
 
@@ -146,6 +147,23 @@ public class GatheringServiceImpl implements GatheringService {
             throw new CustomException(GATHERING_CLOSED);
         }
 
+        // 2. 참여 여부 및 deletedAt 검증
+        Optional<Attendance> findAttendanceOpt = attendanceRepository.findByUserAndGathering(user, gathering);
+
+        if (findAttendanceOpt.isPresent()) {
+            Attendance findAttendance = findAttendanceOpt.get();
+
+            // 만약 deletedAt이 null이 아니라면 기존 참여 기록이 소프트 삭제된 상태이므로 재참여 가능
+            if (findAttendance.getDeletedAt() == null) {
+                throw new CustomException(ALREADY_JOIN_GATHERING); // 이미 참여 중인 경우
+            } else {
+                // 소프트 삭제된 상태를 되돌리고 재참여 처리
+                findAttendance.restore(); // restore() 메서드는 deletedAt을 null로 설정하는 메서드
+                return;
+            }
+        }
+
+        // 3. 새롭게 참여 기록 생성
         Attendance attendance = Attendance.builder()
                 .user(user)
                 .gathering(gathering)
@@ -189,6 +207,29 @@ public class GatheringServiceImpl implements GatheringService {
                 .build();
 
         heartRepository.save(heart);
+    }
+
+    /**
+     * 4. 모임 참여 신청 취소
+     * 작성자: 오예령
+     *
+     * @param email       유저 email
+     * @param gatheringId 모임 id
+     */
+    @Override
+    @Transactional
+    public void joinCancelGathering(String email, Long gatheringId) {
+
+        User user = userService.checkUser(email);
+        Gathering gathering = checkGathering(gatheringId);
+
+        Attendance byUserAndGathering = attendanceRepository.findByUserAndGathering(user, gathering).orElseThrow(
+                () -> new CustomException(ATTENDANCE_NOT_EXIST)
+        );
+
+        // 참여 내역의 실제 데이터를 삭제하지 않고 deletedAt 필드에 삭제된 시점만 기록
+        byUserAndGathering.softDelete();
+
     }
 
     /**
