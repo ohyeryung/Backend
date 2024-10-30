@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
-
     Optional<Attendance> findByUserAndGathering(User user, Gathering gathering);
 
     List<Attendance> findByGathering(Gathering gathering);
