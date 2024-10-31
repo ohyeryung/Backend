@@ -34,4 +34,12 @@ public class User extends Timestamped {
         this.email = email;
         this.password = password;
     }
+
+    public void editName(String name) {
+        this.name = name;
+    }
+
+    public void editProfileImagePath(String filePath) {
+        this.profileImagePath = filePath;
+    }
 }

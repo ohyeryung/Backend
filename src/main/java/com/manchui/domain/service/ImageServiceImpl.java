@@ -31,6 +31,11 @@ public class ImageServiceImpl {
 
     }
 
+    public Long uploadUserProfileImage(MultipartFile multipartFile) {
+        return imageRepository.save(toImageEntity(multipartFile, null)).getImageId();
+    }
+
+
     // MultipartFile 을 Image Entity 형태로 변경
     public Image toImageEntity(MultipartFile multipartFile, Long gatheringId) {
 
@@ -39,6 +44,10 @@ public class ImageServiceImpl {
         String fakeFileName = createRandomFileName(multipartFile.getOriginalFilename());
         String originalFileName = multipartFile.getOriginalFilename();
         String filePath = s3Uploader.uploadImage(multipartFile, fakeFileName);
+
+        if(gatheringId == null){
+            return new Image(originalFileName, fakeFileName, filePath);
+        }
 
         return new Image(originalFileName, fakeFileName,  filePath, gatheringId);
 
