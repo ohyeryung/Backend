@@ -17,7 +17,7 @@ public enum ErrorCode {
     // token
     MISSING_AUTHORIZATION_REFRESH_TOKEN(HttpStatus.BAD_REQUEST, "유효한 Refresh 토큰이 요청에 포함되지 않았습니다."),
     MISSING_AUTHORIZATION_ACCESS_TOKEN(HttpStatus.BAD_REQUEST, "유효한 Access 토큰이 요청에 포함되지 않았습니다."),
-    EXPIRED_JWT(HttpStatus.UNAUTHORIZED,"만료된 토큰 입니다."),
+    EXPIRED_JWT(HttpStatus.UNAUTHORIZED, "만료된 토큰 입니다."),
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 Refresh 토큰입니다."),
     INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 Access 토큰입니다."),
 
@@ -31,7 +31,7 @@ public enum ErrorCode {
     ALREADY_JOIN_GATHERING(HttpStatus.BAD_REQUEST, "이미 참여 신청된 모임입니다."),
     ALREADY_HEART_GATHERING(HttpStatus.BAD_REQUEST, "이미 좋아요를 누른 모임입니다."),
     ATTENDANCE_NOT_EXIST(HttpStatus.BAD_REQUEST, "참여한 모임만 취소 가능합니다."),
-
+    UNAUTHORIZED_GATHERING_CANCEL(HttpStatus.BAD_REQUEST, "본인이 생성한 모임만 취소 가능합니다."),
 
     // image
     ILLEGAL_EMPTY_FILE(HttpStatus.BAD_REQUEST, "이미지 파일은 필수 입력 값입니다."),
