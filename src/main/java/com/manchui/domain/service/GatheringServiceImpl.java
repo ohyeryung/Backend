@@ -100,9 +100,9 @@ public class GatheringServiceImpl implements GatheringService {
      * @return 요청한 범위에 대한 모임 List 반환
      */
     @Override
-    public GatheringPagingResponse getGatheringByGuest(Pageable pageable, String query, String location, String startDate, String endDate, String category) {
+    public GatheringPagingResponse getGatheringByGuest(Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort) {
 
-        return new GatheringPagingResponse(gatheringRepository.getGatheringListByGuest(pageable, query, location, startDate, endDate, category));
+        return new GatheringPagingResponse(gatheringRepository.getGatheringListByGuest(pageable, query, location, startDate, endDate, category, sort));
     }
 
     /**
@@ -119,9 +119,9 @@ public class GatheringServiceImpl implements GatheringService {
      * @return 요청한 범위에 대한 모임 List 반환
      */
     @Override
-    public GatheringPagingResponse getGatheringByUser(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category) {
+    public GatheringPagingResponse getGatheringByUser(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort) {
 
-        return new GatheringPagingResponse(gatheringRepository.getGatheringListByUser(email, pageable, query, location, startDate, endDate, category));
+        return new GatheringPagingResponse(gatheringRepository.getGatheringListByUser(email, pageable, query, location, startDate, endDate, category, sort));
     }
 
     /**

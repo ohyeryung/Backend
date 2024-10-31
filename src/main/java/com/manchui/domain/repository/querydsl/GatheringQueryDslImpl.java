@@ -31,19 +31,19 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
 
     // 비회원 모임 목록 조회
     @Override
-    public Page<GatheringListResponse> getGatheringListByGuest(Pageable pageable, String query, String location, String startDate, String endDate, String category) {
+    public Page<GatheringListResponse> getGatheringListByGuest(Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort) {
 
         JPAQuery<GatheringListResponse> queryBuilder = buildBaseQuery(null);
-        applyFilters(queryBuilder, query, location, startDate, endDate, category);
+        applyFilters(queryBuilder, query, location, startDate, endDate, category, sort);
         return executePagedQuery(queryBuilder, pageable);
     }
 
     // 회원 모임 목록 조회
     @Override
-    public Page<GatheringListResponse> getGatheringListByUser(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category) {
+    public Page<GatheringListResponse> getGatheringListByUser(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort) {
 
         JPAQuery<GatheringListResponse> queryBuilder = buildBaseQuery(email);
-        applyFilters(queryBuilder, query, location, startDate, endDate, category);
+        applyFilters(queryBuilder, query, location, startDate, endDate, category, sort);
         return executePagedQuery(queryBuilder, pageable);
     }
 
@@ -96,7 +96,7 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
     }
 
     // 필터링 적용
-    private void applyFilters(JPAQuery<GatheringListResponse> queryBuilder, String query, String location, String startDate, String endDate, String category) {
+    private void applyFilters(JPAQuery<GatheringListResponse> queryBuilder, String query, String location, String startDate, String endDate, String category, String sort) {
 
         if (query != null && !query.isEmpty()) {
             queryBuilder.where(gathering.groupName.contains(query));
@@ -114,6 +114,15 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
 
         if (category != null && !category.isEmpty()) {
             queryBuilder.where(gathering.category.eq(category));
+        }
+
+        // 정렬 조건 적용
+        if ("closeDate".equals(sort)) {
+            // 마감일자가 최근인 순으로 정렬
+            queryBuilder.orderBy(gathering.dueDate.asc());
+        } else {
+            // 기본 정렬: 최신 생성일 순으로 정렬
+            queryBuilder.orderBy(gathering.createdAt.desc());
         }
     }
 
