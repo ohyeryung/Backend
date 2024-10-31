@@ -33,8 +33,6 @@ public class GatheringListResponse {
 
     private boolean isOpened;
 
-    private boolean isCanceled;
-
     private boolean isClosed;
 
     private LocalDateTime createdAt;

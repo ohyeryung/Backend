@@ -75,7 +75,6 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
                                 "currentUsers"
                         ),
                         gathering.isOpened,
-                        gathering.isCanceled,
                         gathering.isClosed,
                         gathering.createdAt,
                         gathering.updatedAt,
