@@ -315,6 +315,32 @@ public class GatheringServiceImpl implements GatheringService {
     }
 
     /**
+     * 5. 모임 모집 취소
+     * 작성자: 오예령
+     *
+     * @param email       유저 email
+     * @param gatheringId 모임 id
+     */
+    @Override
+    @Transactional
+    public void cancelGathering(String email, Long gatheringId) {
+
+        // 0. 유저 검증
+        User user = userService.checkUser(email);
+
+        // 1. 모임 검증과 동시에 Gathering 객체 가져오기
+        Gathering gathering = checkGathering(gatheringId);
+
+        // 2. 유저와 모임의 작성자가 같은지 검증
+        if (!gathering.getUser().equals(user)) {
+            throw new CustomException(UNAUTHORIZED_GATHERING_CANCEL);
+        }
+        // 4. 모임의 취소 여부 상태값 변경
+        gathering.cancel();
+
+    }
+
+    /**
      * 모임 유효성 검증
      * 작성자: 오예령
      *
