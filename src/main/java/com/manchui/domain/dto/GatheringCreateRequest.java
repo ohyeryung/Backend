@@ -26,9 +26,6 @@ public class GatheringCreateRequest {
     @NotNull(message = "모임일자는 필수 입력값입니다.")
     private String gatheringDate;
 
-//    @NotNull(message = "마감일자는 필수 입력값입니다.")
-//    private String dueDate;
-
     @NotBlank(message = "모임 장소는 필수 입력값입니다.")
     private String location;
 
