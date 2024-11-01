@@ -44,6 +44,16 @@ public class GatheringReaderImpl implements GatheringReader {
         return gathering;
     }
 
+    @Override
+    public Gathering checkGatheringStatusClosed(Long gatheringId) {
+
+        Gathering gathering = checkGathering(gatheringId);
+
+        // 모임이 마감되지 않았거나 취소된 경우 예외 발생
+        if (!gathering.isClosed() || gathering.isCanceled()) throw new CustomException(ILLEGAL_GATHERING_STATUS);
+
+        return gathering;
+    }
 
     @Override
     public List<UserInfo> getUserInfoList(Gathering gathering) {

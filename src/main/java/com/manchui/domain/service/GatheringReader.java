@@ -11,6 +11,8 @@ public interface GatheringReader {
 
     Gathering checkGatheringStatus(Long gatheringId);
 
+    Gathering checkGatheringStatusClosed(Long gatheringId);
+
     List<UserInfo> getUserInfoList(Gathering gathering);
 
 }
