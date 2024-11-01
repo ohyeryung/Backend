@@ -5,6 +5,7 @@ import com.manchui.global.jwt.CustomLogoutFilter;
 import com.manchui.global.jwt.JWTFilter;
 import com.manchui.global.jwt.JWTUtil;
 import com.manchui.global.jwt.LoginFilter;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +20,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
@@ -49,6 +56,24 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+        http
+                .cors((cors) -> cors.configurationSource(new CorsConfigurationSource() {
+                    @Override
+                    public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+                        CorsConfiguration configuration = new CorsConfiguration();
+
+                        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+                        configuration.setAllowedMethods(Collections.singletonList("*"));
+                        configuration.setAllowCredentials(true);
+                        configuration.setAllowedHeaders(Collections.singletonList("*"));
+                        configuration.setMaxAge(3600L);
+
+                        configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+
+                        return configuration;
+                    }
+                }));
 
         //csrf disable
         http
@@ -89,7 +114,7 @@ public class SecurityConfig {
 
         //JWT필터 적용
         http
-                .addFilterAfter(new JWTFilter(jwtUtil), LoginFilter.class);
+                .addFilterAfter(new JWTFilter(jwtUtil, redisRefreshTokenService), LoginFilter.class);
 
 
         //커스텀 로그아웃 필터 적용
