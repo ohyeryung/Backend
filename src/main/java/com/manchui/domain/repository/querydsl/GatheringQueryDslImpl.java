@@ -35,37 +35,51 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
     @Override
     public Page<GatheringListResponse> getGatheringListByGuest(Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort) {
 
-        updateIsClosedStatus(); // 상태 업데이트
-        JPAQuery<GatheringListResponse> queryBuilder = buildBaseQuery(null);
-        applyFilters(queryBuilder, query, location, startDate, endDate, category, sort);
-        return executePagedQuery(queryBuilder, pageable);
+        return getGatheringList(null, pageable, query, location, startDate, endDate, category, sort);
     }
 
     // 회원 모임 목록 조회
     @Override
     public Page<GatheringListResponse> getGatheringListByUser(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort) {
 
+        return getGatheringList(email, pageable, query, location, startDate, endDate, category, sort);
+    }
+
+    // 찜한 모임 목록 조회
+    @Override
+    public Page<GatheringListResponse> getHeartList(String email, Pageable pageable, String location, String startDate, String endDate, String category, String sort) {
+
+        return getGatheringList(email, pageable, null, location, startDate, endDate, category, sort, true);
+    }
+
+    // 공통 모임 목록 조회 로직
+    private Page<GatheringListResponse> getGatheringList(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort) {
+
+        return getGatheringList(email, pageable, query, location, startDate, endDate, category, sort, false);
+    }
+
+    // 공통 모임 목록 조회 로직 (찜한 모임 포함 여부)
+    private Page<GatheringListResponse> getGatheringList(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort, boolean isHeartList) {
+
         updateIsClosedStatus(); // 상태 업데이트
-        JPAQuery<GatheringListResponse> queryBuilder = buildBaseQuery(email);
+        JPAQuery<GatheringListResponse> queryBuilder = buildBaseQuery(email, isHeartList);
         applyFilters(queryBuilder, query, location, startDate, endDate, category, sort);
         return executePagedQuery(queryBuilder, pageable);
     }
-
 
     // 요청 시점에 dueDate가 지난 모임의 isClosed 상태 업데이트
     private void updateIsClosedStatus() {
 
         queryFactory.update(gathering)
                 .set(gathering.isClosed, true)
-                .where(gathering.dueDate.before(LocalDateTime.now())
-                        .and(gathering.isClosed.eq(false)))
+                .where(gathering.dueDate.before(LocalDateTime.now()))
                 .execute();
     }
 
     // 공통 쿼리
-    private JPAQuery<GatheringListResponse> buildBaseQuery(String email) {
+    private JPAQuery<GatheringListResponse> buildBaseQuery(String email, boolean isHeartList) {
 
-        return queryFactory
+        JPAQuery<GatheringListResponse> query = queryFactory
                 .select(Projections.constructor(GatheringListResponse.class,
                         user.name.as("name"),
                         user.profileImagePath.as("profileImage"),
@@ -95,7 +109,7 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
                         gathering.createdAt,
                         gathering.updatedAt,
                         gathering.deletedAt,
-                        email != null ? Expressions.as(
+                        isHeartList ? Expressions.as(
                                 select(heart.count())
                                         .from(heart)
                                         .where(
@@ -107,7 +121,15 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
                 ))
                 .from(gathering)
                 .leftJoin(gathering.user, user)
-                .where(gathering.isCanceled.eq(false));
+                .where(gathering.isCanceled.eq(false)
+                        .and(gathering.isClosed.eq(false)));
+
+        if (isHeartList) {
+            query.leftJoin(heart).on(heart.gathering.id.eq(gathering.id)
+                    .and(heart.user.email.eq(email)));
+        }
+
+        return query;
     }
 
     // 필터링 적용
@@ -133,10 +155,8 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
 
         // 정렬 조건 적용
         if ("closeDate".equals(sort)) {
-            // 마감일자가 최근인 순으로 정렬
             queryBuilder.orderBy(gathering.dueDate.asc());
         } else {
-            // 기본 정렬: 최신 생성일 순으로 정렬
             queryBuilder.orderBy(gathering.createdAt.desc());
         }
     }
@@ -145,7 +165,6 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
     private Page<GatheringListResponse> executePagedQuery(JPAQuery<GatheringListResponse> queryBuilder, Pageable pageable) {
 
         List<GatheringListResponse> gatheringList = queryBuilder
-                .orderBy(gathering.createdAt.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();

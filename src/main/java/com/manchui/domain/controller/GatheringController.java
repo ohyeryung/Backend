@@ -150,12 +150,36 @@ public class GatheringController {
         return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getGatheringInfoByUser(userDetails.getUsername(), gatheringId)));
     }
 
+    @Operation(summary = "찜한 모임 목록 조회", description = "회원이 찜한 모임 목록을 반환합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "회원의 찜한 모임 목록입니다.",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "404", description = "찜한 모임이 없습니다.")
+    })
     @PatchMapping("/{gatheringId}/cancel")
     public ResponseEntity<SuccessResponse<String>> cancelGathering(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                                    @PathVariable Long gatheringId) {
 
         gatheringService.cancelGathering(userDetails.getUsername(), gatheringId);
         return ResponseEntity.ok(SuccessResponse.successWithNoData("모임이 정상적으로 취소되었습니다."));
+    }
+
+    @Operation(summary = "찜한 모임 목록 조회", description = "회원이 찜한 모임 목록을 반환합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "회원의 찜한 모임 목록입니다.",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "404", description = "찜한 모임이 없습니다.")
+    })
+    @GetMapping("/heart")
+    public ResponseEntity<SuccessResponse<GatheringPagingResponse>> getHeartList(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                                 @PageableDefault Pageable pageable,
+                                                                                 @RequestParam(required = false) String location,
+                                                                                 @RequestParam(required = false) String startDate,
+                                                                                 @RequestParam(required = false) String endDate,
+                                                                                 @RequestParam(required = false) String category,
+                                                                                 @RequestParam(required = false) String sort) {
+
+        return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getHeartList(userDetails.getUsername(), pageable, location, startDate, endDate, category, sort)));
     }
 
 }
