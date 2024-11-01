@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/gathering")
+@RequestMapping("/api/gatherings")
 @Slf4j
 public class GatheringController {
 
