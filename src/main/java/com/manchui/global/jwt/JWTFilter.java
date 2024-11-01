@@ -3,10 +3,12 @@ package com.manchui.global.jwt;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.manchui.domain.dto.CustomUserDetails;
 import com.manchui.domain.entity.User;
+import com.manchui.domain.service.RedisRefreshTokenService;
 import com.manchui.global.exception.CustomException;
 import com.manchui.global.exception.ErrorCode;
 import com.manchui.global.response.ErrorResponse;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,36 +27,29 @@ import java.io.IOException;
 public class JWTFilter extends OncePerRequestFilter {
 
     private final JWTUtil jwtUtil;
+    private final RedisRefreshTokenService redisRefreshTokenService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException, CustomException {
 
-        String authorization = request.getHeader("Authorization");
+        String requestUri = request.getRequestURI();
+        String requestMethod = request.getMethod();
 
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
-
+        //해당 URI, method일 경우 다음 필터로
+        if ((requestUri.matches("^\\/api\\/auths\\/signup$") && requestMethod.equals("POST")) ||
+                (requestUri.matches("^\\/api\\/auths\\/check-name$") && requestMethod.equals("POST")) ||
+                (requestUri.matches("^\\/api\\/auths\\/signin$") && requestMethod.equals("POST")) ||
+                (requestUri.matches("^\\/api\\/gatherings\\/public$") && requestMethod.equals("GET"))
+            ){
             filterChain.doFilter(request, response);
             return;
         }
 
-        //Bearer 부분 제거 후 순수 토큰만 획득
-        String accessToken= authorization.split(" ")[1];
-        if (accessToken == null) {
-            handleException(response, ErrorCode.MISSING_AUTHORIZATION_ACCESS_TOKEN);
-            throw new CustomException(ErrorCode.MISSING_AUTHORIZATION_ACCESS_TOKEN);
-        }
-
-        //토큰 소멸 시간 검증
-        if (jwtUtil.isExpired(accessToken)) {
-            handleException(response, ErrorCode.EXPIRED_JWT);
-            throw new CustomException(ErrorCode.EXPIRED_JWT);
-        }
-
-        String category = jwtUtil.getCategory(accessToken);
-
-        if (!category.equals("access")) {
-            handleException(response, ErrorCode.INVALID_ACCESS_TOKEN);
-            throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
+        String accessToken = null;
+        try {
+            accessToken = validateAccessToken(request, response, filterChain);
+        } catch (Exception e) {
+            return;
         }
 
         String userEmail = jwtUtil.getUsername(accessToken);
@@ -66,6 +61,53 @@ public class JWTFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
         filterChain.doFilter(request, response);
+    }
+
+    private String validateAccessToken(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        String authorization = request.getHeader("Authorization");
+
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+
+            handleException(response, ErrorCode.MISSING_AUTHORIZATION_ACCESS_TOKEN);
+            throw new CustomException(ErrorCode.MISSING_AUTHORIZATION_ACCESS_TOKEN);
+        }
+
+        //Bearer 부분 제거 후 순수 토큰만 획득
+        String accessToken= authorization.split(" ")[1];
+
+        //응답 header에 accessToken이 없는 경우
+        if (accessToken == null) {
+
+            handleException(response, ErrorCode.MISSING_AUTHORIZATION_ACCESS_TOKEN);
+            throw new CustomException(ErrorCode.MISSING_AUTHORIZATION_ACCESS_TOKEN);
+        }
+
+        //accessToken이 만료된 경우
+        try {
+            jwtUtil.isExpired(accessToken);
+        } catch (ExpiredJwtException e) {
+            handleException(response, ErrorCode.EXPIRED_JWT);
+            throw new CustomException(ErrorCode.EXPIRED_JWT);
+        } catch (SignatureException e) {
+            handleException(response, ErrorCode.INVALID_ACCESS_TOKEN);
+            throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
+        }
+
+        String category = jwtUtil.getCategory(accessToken);
+
+        if (!category.equals("access")) {
+            handleException(response, ErrorCode.INVALID_ACCESS_TOKEN);
+            throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
+        }
+
+        String userEmail = jwtUtil.getUsername(accessToken);
+        //Redis에 저장된 access 토큰 확인
+        if (!redisRefreshTokenService.existsByAccessToken(userEmail)) {
+            handleException(response, ErrorCode.INVALID_ACCESS_TOKEN);
+            throw new CustomException(ErrorCode.INVALID_ACCESS_TOKEN);
+        }
+
+        return accessToken;
     }
 
     // 예외 처리 응답을 직접 설정하는 메서드
