@@ -26,4 +26,6 @@ public interface GatheringService {
 
     GatheringInfoResponse getGatheringInfoByUser(String email, Long gatheringId);
 
+    void cancelGathering(String email, Long gatheringId);
+
 }

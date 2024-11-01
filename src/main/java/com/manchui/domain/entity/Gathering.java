@@ -91,6 +91,7 @@ public class Gathering extends Timestamped {
     private User user;
 
     public GatheringCreateResponse toResponseDto(String filePath) {
+
         return GatheringCreateResponse.builder()
                 .gatheringId(id)
                 .groupName(groupName)
@@ -109,6 +110,11 @@ public class Gathering extends Timestamped {
                 .isClosed(isClosed)
                 .build();
 
+    }
+
+    public void cancel() {
+
+        this.isCanceled = true;
     }
 
 }

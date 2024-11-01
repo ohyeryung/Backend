@@ -146,5 +146,13 @@ public class GatheringController {
         return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getGatheringInfoByUser(userDetails.getUsername(), gatheringId)));
     }
 
+    @PatchMapping("/{gatheringId}/cancel")
+    public ResponseEntity<SuccessResponse<String>> cancelGathering(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                   @PathVariable Long gatheringId) {
+
+        gatheringService.cancelGathering(userDetails.getUsername(), gatheringId);
+        return ResponseEntity.ok(SuccessResponse.successWithNoData("모임이 정상적으로 취소되었습니다."));
+    }
+
 }
 
