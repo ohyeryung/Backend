@@ -30,10 +30,14 @@ public enum ErrorCode {
     GATHERING_CLOSED(HttpStatus.BAD_REQUEST, "모집이 마감된 모임입니다."),
     ALREADY_JOIN_GATHERING(HttpStatus.BAD_REQUEST, "이미 참여 신청된 모임입니다."),
     ALREADY_HEART_GATHERING(HttpStatus.BAD_REQUEST, "이미 좋아요를 누른 모임입니다."),
-    ATTENDANCE_NOT_EXIST(HttpStatus.BAD_REQUEST, "참여한 모임만 취소 가능합니다."),
+    ATTENDANCE_NOT_EXIST(HttpStatus.BAD_REQUEST, "참여한 모임만 취소/후기 등록이 가능합니다."),
     UNAUTHORIZED_GATHERING_CANCEL(HttpStatus.BAD_REQUEST, "본인이 생성한 모임만 취소 가능합니다."),
     GATHERING_FULL(HttpStatus.BAD_REQUEST, "모집 정원이 다 찬 경우에는 참여할 수 없습니다."),
     MUST_JOIN_IN(HttpStatus.BAD_REQUEST, "모임 주최자는 필수 참석입니다"),
+
+    // review
+    ILLEGAL_GATHERING_STATUS(HttpStatus.BAD_REQUEST, "마감된 모임만 후기 등록이 가능합니다."),
+    ALREADY_REVIEW_EXIST(HttpStatus.BAD_REQUEST, "참여한 모임에 대한 후기는 1회만 등록 가능합니다."),
 
     // image
     ILLEGAL_EMPTY_FILE(HttpStatus.BAD_REQUEST, "이미지 파일은 필수 입력 값입니다."),
