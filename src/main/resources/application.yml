@@ -57,7 +57,11 @@ logging:
   level:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    
+
+gathering:
+  date-pattern: "yyyy-MM-dd HH:mm:ss"
+  due-date-hours-before: 5
+
 ---
 
 # 배포 환경 설정
@@ -114,3 +118,7 @@ cloud:
     credentials:
       access-key: ${ACCESS_KEY}
       secret-key: ${SECRET_KEY}
+
+gathering:
+  date-pattern: "yyyy-MM-dd HH:mm:ss"
+  due-date-hours-before: 5

@@ -18,12 +18,12 @@ public class Heart extends Timestamped {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     public Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gathering_id", nullable = false)
     @Comment("모임 id")
     private Gathering gathering;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @Comment("회원 id")
     private User user;

@@ -79,7 +79,7 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
 
                                 // 비회원 조회 경로
-                                "/api/gathering/public/**").permitAll()
+                                "/api/gatherings/public/**").permitAll()
                         .anyRequest().authenticated()
                 );
         //로그인 필터 적용

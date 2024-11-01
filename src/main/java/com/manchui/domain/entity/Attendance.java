@@ -21,12 +21,12 @@ public class Attendance extends Timestamped {
     @Comment("참석 id")
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gathering_id", nullable = false)
     @Comment("모임 id")
     private Gathering gathering;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     @Comment("회원 id")
     private User user;

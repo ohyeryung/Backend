@@ -10,7 +10,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/gathering")
+@RequestMapping("/api/gatherings")
 @Slf4j
 public class GatheringController {
 
@@ -49,14 +51,16 @@ public class GatheringController {
             @ApiResponse(responseCode = "404", description = "해당하는 모임이 없습니다.")
     })
     @GetMapping("/public")
-    public ResponseEntity<SuccessResponse<GatheringPagingResponse>> getGatheringByGuest(@PageableDefault Pageable pageable,
-                                                                                        @RequestParam String query,
-                                                                                        @RequestParam String location,
-                                                                                        @RequestParam String startDate,
-                                                                                        @RequestParam String endDate,
-                                                                                        @RequestParam String category,
-                                                                                        @RequestParam String sort) {
+    public ResponseEntity<SuccessResponse<GatheringPagingResponse>> getGatheringByGuest(@RequestParam(defaultValue = "1") int page,
+                                                                                        @RequestParam int size,
+                                                                                        @RequestParam(required = false) String query,
+                                                                                        @RequestParam(required = false) String location,
+                                                                                        @RequestParam(required = false) String startDate,
+                                                                                        @RequestParam(required = false) String endDate,
+                                                                                        @RequestParam(required = false) String category,
+                                                                                        @RequestParam(required = false) String sort) {
 
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
         return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getGatheringByGuest(pageable, query, location, startDate, endDate, category, sort)));
 
     }
@@ -71,12 +75,12 @@ public class GatheringController {
     @GetMapping("")
     public ResponseEntity<SuccessResponse<GatheringPagingResponse>> getGatheringByUser(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                                                        @PageableDefault Pageable pageable,
-                                                                                       @RequestParam String query,
-                                                                                       @RequestParam String location,
-                                                                                       @RequestParam String startDate,
-                                                                                       @RequestParam String endDate,
-                                                                                       @RequestParam String category,
-                                                                                       @RequestParam String sort) {
+                                                                                       @RequestParam(required = false) String query,
+                                                                                       @RequestParam(required = false) String location,
+                                                                                       @RequestParam(required = false) String startDate,
+                                                                                       @RequestParam(required = false) String endDate,
+                                                                                       @RequestParam(required = false) String category,
+                                                                                       @RequestParam(required = false) String sort) {
 
         return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getGatheringByUser(userDetails.getUsername(), pageable, query, location, startDate, endDate, category, sort)));
 
