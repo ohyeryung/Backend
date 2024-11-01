@@ -1,6 +1,7 @@
 package com.manchui.domain.service;
 
 import com.manchui.global.exception.CustomException;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -17,9 +18,15 @@ public class GatheringDateUtils {
 
     @Value("${gathering.date-pattern}")
     private String gatheringDatePattern;
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(gatheringDatePattern);
+    private DateTimeFormatter formatter;
     @Value("${gathering.due-date-hours-before}")
     private int dueDateHoursBeforeGathering;
+
+    @PostConstruct
+    private void init() {
+        // gatheringDatePattern이 주입된 후에 초기화
+        formatter = DateTimeFormatter.ofPattern(gatheringDatePattern);
+    }
 
     // 모임 날짜 변환
     public LocalDateTime parseGatheringDate(String gatheringDateStr) {
