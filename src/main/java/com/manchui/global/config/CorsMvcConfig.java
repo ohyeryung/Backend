@@ -14,7 +14,7 @@ public class CorsMvcConfig implements WebMvcConfigurer {
                 .allowedOrigins("http://localhost:3000", "http://13.125.37.151:8080") // 여러 원본을 하나의 호출로
                 .allowedMethods("*")
                 .allowedHeaders("*")
-                .exposedHeaders("access")
+                .exposedHeaders("Authorization")
                 .allowCredentials(true);
     }
 
