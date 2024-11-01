@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static com.manchui.domain.entity.QAttendance.attendance;
 import static com.manchui.domain.entity.QGathering.gathering;
@@ -81,6 +82,7 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
                         gathering.gatheringDate,
                         gathering.dueDate,
                         gathering.maxUsers,
+                        gathering.minUsers,
                         Expressions.as(
                                 select(attendance.count())
                                         .from(attendance)
@@ -148,9 +150,10 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        Long total = queryBuilder.clone()
+        // 2. 카운트 쿼리
+        Long total = Optional.ofNullable(queryBuilder.clone()
                 .select(gathering.count())
-                .fetchOne();
+                .fetchOne()).orElse(0L);
 
         return new PageImpl<>(gatheringList, pageable, total);
     }

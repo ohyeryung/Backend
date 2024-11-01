@@ -29,6 +29,8 @@ public class GatheringListResponse {
 
     private int maxUsers;
 
+    private int minUsers;
+
     private Long currentUsers;
 
     private boolean isOpened;
