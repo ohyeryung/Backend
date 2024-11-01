@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
@@ -15,4 +16,5 @@ public class UserInfoResponse {
     private String email;
     private String name;
     private String image;
+    private LocalDateTime createdAt;
 }

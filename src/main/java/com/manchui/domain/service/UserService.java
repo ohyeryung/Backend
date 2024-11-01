@@ -44,6 +44,7 @@ public class UserService {
                 .email(user.getEmail())
                 .name(user.getName())
                 .image(user.getProfileImagePath())
+                .createdAt(user.getCreatedAt())
                 .build();
     }
 
