@@ -28,4 +28,6 @@ public interface GatheringService {
 
     void cancelGathering(String email, Long gatheringId);
 
+    GatheringPagingResponse getHeartList(String email, Pageable pageable, String location, String startDate, String endDate, String category, String sort);
+
 }

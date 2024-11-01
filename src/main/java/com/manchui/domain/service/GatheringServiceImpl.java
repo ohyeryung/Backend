@@ -259,6 +259,26 @@ public class GatheringServiceImpl implements GatheringService {
         gathering.cancel();
     }
 
+    /**
+     * 6. 찜한 모임 목록 조회
+     * 작성자: 오예령
+     *
+     * @param email     유저 email
+     * @param pageable  페이징 처리에 필요한 데이터
+     * @param location  위치
+     * @param startDate 시작 날짜
+     * @param endDate   끝 날짜
+     * @param category  모임 카테고리
+     * @param sort      정렬 기준
+     * @return 유저가 찜한 모임의 목록 반환
+     */
+    @Override
+    @Transactional
+    public GatheringPagingResponse getHeartList(String email, Pageable pageable, String location, String startDate, String endDate, String category, String sort) {
+
+        return new GatheringPagingResponse(gatheringRepository.getHeartList(email, pageable, location, startDate, endDate, category, sort));
+    }
+
     // 참여 여부 판단
     private void handleExistingAttendance(Attendance attendance) {
 
