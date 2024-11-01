@@ -150,7 +150,7 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        // 2. 카운트 쿼리
+        // 카운트 쿼리
         Long total = Optional.ofNullable(queryBuilder.clone()
                 .select(gathering.count())
                 .fetchOne()).orElse(0L);
