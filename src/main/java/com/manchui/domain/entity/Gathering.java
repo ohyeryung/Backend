@@ -117,4 +117,16 @@ public class Gathering extends Timestamped {
         this.isCanceled = true;
     }
 
+    // 모임 최소 인원 충족 시 개설 확정으로 상태값 변경
+    public void open() {
+
+        this.isOpened = true;
+    }
+
+    // 모임 최소 인원 미충족 시 개설 확정 false 로 상태값 변경
+    public void close() {
+
+        this.isOpened = false;
+    }
+
 }
