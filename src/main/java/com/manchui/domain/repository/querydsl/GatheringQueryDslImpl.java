@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.manchui.domain.entity.QAttendance.attendance;
@@ -33,6 +34,7 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
     @Override
     public Page<GatheringListResponse> getGatheringListByGuest(Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort) {
 
+        updateIsClosedStatus(); // 상태 업데이트
         JPAQuery<GatheringListResponse> queryBuilder = buildBaseQuery(null);
         applyFilters(queryBuilder, query, location, startDate, endDate, category, sort);
         return executePagedQuery(queryBuilder, pageable);
@@ -42,9 +44,21 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
     @Override
     public Page<GatheringListResponse> getGatheringListByUser(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort) {
 
+        updateIsClosedStatus(); // 상태 업데이트
         JPAQuery<GatheringListResponse> queryBuilder = buildBaseQuery(email);
         applyFilters(queryBuilder, query, location, startDate, endDate, category, sort);
         return executePagedQuery(queryBuilder, pageable);
+    }
+
+
+    // 요청 시점에 dueDate가 지난 모임의 isClosed 상태 업데이트
+    private void updateIsClosedStatus() {
+
+        queryFactory.update(gathering)
+                .set(gathering.isClosed, true)
+                .where(gathering.dueDate.before(LocalDateTime.now())
+                        .and(gathering.isClosed.eq(false)))
+                .execute();
     }
 
     // 공통 쿼리
