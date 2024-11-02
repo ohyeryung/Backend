@@ -4,11 +4,15 @@ import com.manchui.domain.dto.CustomUserDetails;
 import com.manchui.domain.dto.User.UserEditInfoResponse;
 import com.manchui.domain.dto.User.UserEditInfoRequest;
 import com.manchui.domain.dto.User.UserInfoResponse;
+import com.manchui.domain.dto.User.UserWrittenGatheringsResponse;
 import com.manchui.domain.entity.User;
 import com.manchui.domain.service.UserService;
 import com.manchui.global.response.SuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -45,6 +49,16 @@ public class UserController {
                 .build();
 
         return ResponseEntity.ok().body(SuccessResponse.successWithData(response));
+    }
+
+    @GetMapping("/api/users/gatherings")
+    public ResponseEntity<SuccessResponse<UserWrittenGatheringsResponse>> getMyGatheringList(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PageableDefault(size = 10, sort = "gatheringDate", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        UserWrittenGatheringsResponse response = userService.getWrittenGatheringList(userDetails.getUsername(), pageable);
+
+        return ResponseEntity.ok(SuccessResponse.successWithData(response));
     }
 
 }
