@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class WrittenGathering {
+public class GatheringInfo {
     private Long gatheringId;
     private String groupName;
     private String category;
@@ -24,7 +24,7 @@ public class WrittenGathering {
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
-    public WrittenGathering(Long gatheringId, String groupName, String category, String location, String gatheringImage
+    public GatheringInfo(Long gatheringId, String groupName, String category, String location, String gatheringImage
                             , LocalDateTime gatheringDate, LocalDateTime dueDate, int maxUsers, int participantUsers
                             , Boolean isOpened, Boolean isCanceled, Boolean isClosed, LocalDateTime createdAt
                             , LocalDateTime updatedAt, LocalDateTime deletedAt) {

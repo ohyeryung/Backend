@@ -6,17 +6,17 @@ import org.springframework.data.domain.Page;
 
 @Getter
 @Setter
-public class UserWrittenGatheringsResponse {
+public class UserParticipatedGatheringResponse {
 
     private long gatheringCount;
-    private Page<GatheringInfo> writtenGatheringList;
+    private Page<GatheringInfo> participatedGatheringList;
     private long pageSize;
     private long page;
     private long totalPage;
 
-    public UserWrittenGatheringsResponse(long gatheringCount, Page<GatheringInfo> writtenGatheringList, long pageSize, long page, long totalPage) {
+    public UserParticipatedGatheringResponse(long gatheringCount, Page<GatheringInfo> participatedGatheringList, long pageSize, long page, long totalPage) {
         this.gatheringCount = gatheringCount;
-        this.writtenGatheringList = writtenGatheringList;
+        this.participatedGatheringList = participatedGatheringList;
         this.pageSize = pageSize;
         this.page = page;
         this.totalPage = totalPage;
