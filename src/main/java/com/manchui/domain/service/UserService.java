@@ -1,13 +1,10 @@
 package com.manchui.domain.service;
 
-import com.manchui.domain.dto.GatheringListResponse;
-import com.manchui.domain.dto.User.UserEditInfoRequest;
-import com.manchui.domain.dto.User.UserInfoResponse;
-import com.manchui.domain.dto.User.UserWrittenGatheringsResponse;
-import com.manchui.domain.dto.User.WrittenGathering;
-import com.manchui.domain.entity.Gathering;
+import com.manchui.domain.dto.User.*;
+import com.manchui.domain.entity.Attendance;
 import com.manchui.domain.entity.Image;
 import com.manchui.domain.entity.User;
+import com.manchui.domain.entity.Gathering;
 import com.manchui.domain.repository.AttendanceRepository;
 import com.manchui.domain.repository.GatheringRepository;
 import com.manchui.domain.repository.ImageRepository;
@@ -15,13 +12,13 @@ import com.manchui.domain.repository.UserRepository;
 import com.manchui.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static com.manchui.global.exception.ErrorCode.*;
@@ -97,11 +94,11 @@ public class UserService {
         Page<Gathering> gatheringList = gatheringRepository.findByUserEquals(user, pageable);
 
         //DTO에 맞게 변환
-        Page<WrittenGathering> writtenGatheringList = gatheringList.map(m -> {
+        Page<GatheringInfo> writtenGatheringList = gatheringList.map(m -> {
             String imagePath = imageRepository.findByGatheringId(m.getId()).getFilePath();
             int participantUsers = attendanceRepository.countByGatheringAndDeletedAtIsNull(m);
 
-            return new WrittenGathering(m.getId(), m.getGroupName(), m.getCategory(), m.getLocation(),
+            return new GatheringInfo(m.getId(), m.getGroupName(), m.getCategory(), m.getLocation(),
                     imagePath, m.getGatheringDate(), m.getDueDate(),
                     m.getMaxUsers(), participantUsers, m.isOpened(), m.isCanceled(), m.isClosed(), m.getCreatedAt(),
                     m.getUpdatedAt(), m.getDeletedAt());
@@ -111,5 +108,36 @@ public class UserService {
                 writtenGatheringList.getNumberOfElements(), writtenGatheringList,
                 writtenGatheringList.getSize(), writtenGatheringList.getNumber(),
                 writtenGatheringList.getTotalPages());
+    }
+
+    //사용자가 참여한 모임 목록 조회
+    public UserParticipatedGatheringResponse getParticipatedGatheringList(String userEmail, Pageable pageable) {
+
+        User user = userRepository.findByEmail(userEmail);
+
+        //유저 모임 참여 엔티티 조회
+        List<Attendance> userAttendance = attendanceRepository.findByUserEquals(user);
+        List<Long> gatheringIdList = new ArrayList<>();
+        //참여한 모임 ID 목록
+        for (Attendance attendance : userAttendance) {
+            Long gatheringId = attendance.getGathering().getId();
+            gatheringIdList.add(gatheringId);
+        }
+
+        Page<Gathering> gatheringList = gatheringRepository.findByIdIn(gatheringIdList, pageable);
+
+        Page<GatheringInfo> participatedGatheringList = gatheringList.map(m -> {
+
+            String filePath = imageRepository.findByGatheringId(m.getId()).getFilePath();
+            int participantUsers = attendanceRepository.countByGatheringAndDeletedAtIsNull(m);
+
+
+            return new GatheringInfo(m.getId(), m.getGroupName(), m.getCategory(), m.getLocation()
+                    , filePath, m.getGatheringDate(), m.getDeletedAt(), m.getMaxUsers(), participantUsers
+                    , m.isOpened(), m.isCanceled(), m.isClosed(), m.getCreatedAt(), m.getUpdatedAt(), m.getDeletedAt());
+        });
+
+        return new UserParticipatedGatheringResponse(gatheringList.getNumberOfElements(), participatedGatheringList
+                , participatedGatheringList.getSize(), participatedGatheringList.getNumber(), participatedGatheringList.getTotalPages());
     }
 }

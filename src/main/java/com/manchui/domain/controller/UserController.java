@@ -1,10 +1,7 @@
 package com.manchui.domain.controller;
 
 import com.manchui.domain.dto.CustomUserDetails;
-import com.manchui.domain.dto.User.UserEditInfoResponse;
-import com.manchui.domain.dto.User.UserEditInfoRequest;
-import com.manchui.domain.dto.User.UserInfoResponse;
-import com.manchui.domain.dto.User.UserWrittenGatheringsResponse;
+import com.manchui.domain.dto.User.*;
 import com.manchui.domain.entity.User;
 import com.manchui.domain.service.UserService;
 import com.manchui.global.response.SuccessResponse;
@@ -60,5 +57,16 @@ public class UserController {
 
         return ResponseEntity.ok(SuccessResponse.successWithData(response));
     }
+
+    @GetMapping("/api/users/gatherings/attendance")
+    public ResponseEntity<SuccessResponse<UserParticipatedGatheringResponse>> getMyParticipatedGatheringList(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @PageableDefault(sort = "gatheringDate", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        String userEmail = customUserDetails.getUsername();
+        UserParticipatedGatheringResponse response = userService.getParticipatedGatheringList(userEmail, pageable);
+        return ResponseEntity.ok(SuccessResponse.successWithData(response));
+    }
+
 
 }
