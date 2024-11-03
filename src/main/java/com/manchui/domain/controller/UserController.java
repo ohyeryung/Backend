@@ -68,5 +68,14 @@ public class UserController {
         return ResponseEntity.ok(SuccessResponse.successWithData(response));
     }
 
+    @GetMapping("/api/users/reviews")
+    public ResponseEntity<SuccessResponse<UserWrittenReviewsResponse>> getWrittenReviews
+            (@AuthenticationPrincipal CustomUserDetails customUserDetails,
+             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        UserWrittenReviewsResponse response = userService.getWrittenReviews(customUserDetails.getUsername(), pageable);
+
+        return ResponseEntity.ok(SuccessResponse.successWithData(response));
+    }
 
 }
