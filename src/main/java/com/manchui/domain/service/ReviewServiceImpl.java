@@ -1,6 +1,7 @@
 package com.manchui.domain.service;
 
-import com.manchui.domain.dto.ReviewCreateResponse;
+import com.manchui.domain.dto.review.ReviewCreateRequest;
+import com.manchui.domain.dto.review.ReviewCreateResponse;
 import com.manchui.domain.entity.Attendance;
 import com.manchui.domain.entity.Gathering;
 import com.manchui.domain.entity.Review;
@@ -14,8 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-import static com.manchui.global.exception.ErrorCode.ALREADY_REVIEW_EXIST;
-import static com.manchui.global.exception.ErrorCode.ATTENDANCE_NOT_EXIST;
+import static com.manchui.global.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -30,14 +30,14 @@ public class ReviewServiceImpl implements ReviewService {
      * 0. 후기 등록
      * 작성자: 오예령
      *
-     * @param email          유저 email
-     * @param gatheringId    모임 id
-     * @param createResponse 생성된 모임 반환
-     * @return
+     * @param email         유저 email
+     * @param gatheringId   모임 id
+     * @param createRequest 후기 평점 및 내용
+     * @return 생성된 후기 반환
      */
     @Override
     @Transactional
-    public ReviewCreateResponse createReview(String email, Long gatheringId, ReviewCreateResponse createResponse) {
+    public ReviewCreateResponse createReview(String email, Long gatheringId, ReviewCreateRequest createRequest) {
 
         // 유저 검증
         User user = userService.checkUser(email);
@@ -54,13 +54,45 @@ public class ReviewServiceImpl implements ReviewService {
         if (existingReview.isPresent()) throw new CustomException(ALREADY_REVIEW_EXIST);
 
         Review review = Review.builder()
-                .score(createResponse.getScore())
-                .comment(createResponse.getComment())
+                .score(createRequest.getScore())
+                .comment(createRequest.getComment())
                 .gathering(gathering)
                 .user(user)
                 .build();
 
         reviewRepository.save(review);
+
+        return review.toResponseDto();
+    }
+
+    /**
+     * 1. 후기 수정
+     * 작성자: 오예령
+     *
+     * @param email         유저 email
+     * @param reviewId      후기 id
+     * @param updateRequest 후기 평점 및 내용
+     * @return 수정된 후기 반환
+     */
+    @Override
+    @Transactional
+    public ReviewCreateResponse updateReview(String email, Long reviewId, ReviewCreateRequest updateRequest) {
+
+        // 유저 검증
+        User user = userService.checkUser(email);
+
+        // 후기 검증
+        Review review = reviewRepository.findById(reviewId).orElseThrow(
+                () -> new CustomException(REVIEW_NOT_FOUND)
+        );
+
+        // 모임 검증
+        Long gatheringId = review.getGathering().getId();
+
+        Gathering gathering = gatheringReader.checkGatheringStatusClosed(gatheringId);
+
+        // 후기 수정
+        review.update(updateRequest, user, gathering);
 
         return review.toResponseDto();
     }
