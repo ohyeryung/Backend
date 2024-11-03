@@ -1,5 +1,6 @@
 package com.manchui.domain.service;
 
+import com.manchui.domain.dto.ReviewInfo;
 import com.manchui.domain.dto.UserInfo;
 import com.manchui.domain.entity.Gathering;
 
@@ -11,6 +12,10 @@ public interface GatheringReader {
 
     Gathering checkGatheringStatus(Long gatheringId);
 
+    Gathering checkGatheringStatusClosed(Long gatheringId);
+
     List<UserInfo> getUserInfoList(Gathering gathering);
+
+    List<ReviewInfo> getReviewInfoList(Gathering gathering);
 
 }

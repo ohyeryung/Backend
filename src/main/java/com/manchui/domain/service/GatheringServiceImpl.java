@@ -2,10 +2,7 @@ package com.manchui.domain.service;
 
 import com.manchui.domain.dto.*;
 import com.manchui.domain.entity.*;
-import com.manchui.domain.repository.AttendanceRepository;
-import com.manchui.domain.repository.GatheringRepository;
-import com.manchui.domain.repository.HeartRepository;
-import com.manchui.domain.repository.ImageRepository;
+import com.manchui.domain.repository.*;
 import com.manchui.global.exception.CustomException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +11,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,6 +38,8 @@ public class GatheringServiceImpl implements GatheringService {
     private final AttendanceRepository attendanceRepository;
 
     private final HeartRepository heartRepository;
+
+    private final ReviewRepository reviewRepository;
 
     /**
      * 0. 모임 생성
@@ -296,6 +294,10 @@ public class GatheringServiceImpl implements GatheringService {
 
         Gathering gathering = gatheringReader.checkGathering(gatheringId);
         List<UserInfo> userInfoList = gatheringReader.getUserInfoList(gathering);
+
+        // TODO : 추후 페이징 처리 추가 예정 ? -> OR 후기 목록 조회 API로 분리할 가능성도 있음
+        List<ReviewInfo> reviewInfoList = gatheringReader.getReviewInfoList(gathering);
+
         Image image = imageRepository.findByGatheringId(gatheringId);
 
         int currentUsers = userInfoList.size();
@@ -303,9 +305,7 @@ public class GatheringServiceImpl implements GatheringService {
 
         boolean isHearted = isUser && heartRepository.findByUserAndGathering(user, gathering).isPresent();
 
-        // TODO : 후기 리스트 추가 예정
-
-        return new GatheringInfoResponse(gathering, image.getFilePath(), currentUsers, isHearted, userInfoList, new ArrayList<>());
+        return new GatheringInfoResponse(gathering, image.getFilePath(), currentUsers, isHearted, userInfoList, reviewInfoList);
     }
 
 }

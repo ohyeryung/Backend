@@ -170,7 +170,7 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
                 .fetch();
 
         // 카운트 쿼리
-        Long total = Optional.ofNullable(queryBuilder.clone()
+        long total = Optional.ofNullable(queryBuilder.clone()
                 .select(gathering.count())
                 .fetchOne()).orElse(0L);
 

@@ -16,6 +16,7 @@ public class Heart extends Timestamped {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Comment("좋아요 id")
     public Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
