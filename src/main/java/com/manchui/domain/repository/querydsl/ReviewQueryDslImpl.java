@@ -1,6 +1,6 @@
 package com.manchui.domain.repository.querydsl;
 
-import com.manchui.domain.dto.ReviewInfo;
+import com.manchui.domain.dto.review.ReviewInfo;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
