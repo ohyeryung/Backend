@@ -1,4 +1,4 @@
-package com.manchui.domain.dto;
+package com.manchui.domain.dto.gathering;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

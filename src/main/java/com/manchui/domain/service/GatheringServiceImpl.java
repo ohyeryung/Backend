@@ -1,6 +1,11 @@
 package com.manchui.domain.service;
 
 import com.manchui.domain.dto.*;
+import com.manchui.domain.dto.gathering.GatheringCreateRequest;
+import com.manchui.domain.dto.gathering.GatheringCreateResponse;
+import com.manchui.domain.dto.gathering.GatheringInfoResponse;
+import com.manchui.domain.dto.gathering.GatheringPagingResponse;
+import com.manchui.domain.dto.review.ReviewInfo;
 import com.manchui.domain.entity.*;
 import com.manchui.domain.repository.*;
 import com.manchui.global.exception.CustomException;
