@@ -1,7 +1,7 @@
 package com.manchui.domain.service;
 
-import com.manchui.domain.dto.review.ReviewInfo;
 import com.manchui.domain.dto.UserInfo;
+import com.manchui.domain.dto.review.ReviewInfo;
 import com.manchui.domain.entity.Attendance;
 import com.manchui.domain.entity.Gathering;
 import com.manchui.domain.entity.Review;
@@ -50,7 +50,7 @@ public class GatheringReaderImpl implements GatheringReader {
     }
 
     @Override
-    public Gathering checkGatheringStatusClosed(Long gatheringId) {
+    public Gathering checkGatheringStatusIsClosed(Long gatheringId) {
 
         Gathering gathering = checkGathering(gatheringId);
 
@@ -81,5 +81,19 @@ public class GatheringReaderImpl implements GatheringReader {
 
         return reviewInfoList;
     }
+
+    @Override
+    public Gathering checkGatheringStatusIsCanceled(Long gatheringId) {
+
+        Gathering gathering = checkGathering(gatheringId);
+
+        // 모임이 취소된 경우 예외 발생
+        if (gathering.isCanceled()) {
+            throw new CustomException(GATHERING_CANCELED);
+        }
+
+        return gathering;
+    }
+
 
 }
