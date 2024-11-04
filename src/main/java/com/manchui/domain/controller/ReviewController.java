@@ -32,5 +32,11 @@ public class ReviewController {
         return ResponseEntity.ok().body(SuccessResponse.successWithData(reviewService.updateReview(userDetails.getUsername(), reviewId, updateRequest)));
     }
 
+    @DeleteMapping("/{reviewId}")
+    public ResponseEntity<SuccessResponse<ReviewCreateResponse>> deleteReview(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long reviewId) {
+
+        reviewService.deleteReview(userDetails.getUsername(), reviewId);
+        return ResponseEntity.ok().body(SuccessResponse.successWithNoData("후기가 정상적으로 삭제되었습니다."));
+    }
 
 }

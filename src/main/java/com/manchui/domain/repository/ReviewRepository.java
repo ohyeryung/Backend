@@ -15,4 +15,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long>, ReviewQue
 
     List<Review> findByGathering(Gathering gathering);
 
+    Optional<Review> findByIdAndDeletedAtIsNull(Long reviewId);
+
 }
