@@ -1,6 +1,6 @@
 package com.manchui.domain.service;
 
-import com.manchui.domain.dto.GatheringCreateRequest;
+import com.manchui.domain.dto.gathering.GatheringCreateRequest;
 import com.manchui.domain.entity.Gathering;
 import com.manchui.domain.entity.User;
 

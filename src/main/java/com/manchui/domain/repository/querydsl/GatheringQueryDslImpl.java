@@ -1,6 +1,6 @@
 package com.manchui.domain.repository.querydsl;
 
-import com.manchui.domain.dto.GatheringListResponse;
+import com.manchui.domain.dto.gathering.GatheringListResponse;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;

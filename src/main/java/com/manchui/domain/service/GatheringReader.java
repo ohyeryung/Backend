@@ -1,6 +1,6 @@
 package com.manchui.domain.service;
 
-import com.manchui.domain.dto.ReviewInfo;
+import com.manchui.domain.dto.review.ReviewInfo;
 import com.manchui.domain.dto.UserInfo;
 import com.manchui.domain.entity.Gathering;
 

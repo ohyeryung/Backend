@@ -1,4 +1,4 @@
-package com.manchui.domain.dto;
+package com.manchui.domain.dto.gathering;
 
 import com.manchui.domain.entity.Gathering;
 import com.manchui.domain.entity.User;

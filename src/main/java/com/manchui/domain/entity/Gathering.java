@@ -1,6 +1,6 @@
 package com.manchui.domain.entity;
 
-import com.manchui.domain.dto.GatheringCreateResponse;
+import com.manchui.domain.dto.gathering.GatheringCreateResponse;
 import com.manchui.global.entity.Timestamped;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;

@@ -1,4 +1,4 @@
-package com.manchui.domain.dto;
+package com.manchui.domain.dto.review;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

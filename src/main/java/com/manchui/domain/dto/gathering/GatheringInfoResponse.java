@@ -1,5 +1,7 @@
-package com.manchui.domain.dto;
+package com.manchui.domain.dto.gathering;
 
+import com.manchui.domain.dto.review.ReviewInfo;
+import com.manchui.domain.dto.UserInfo;
 import com.manchui.domain.entity.Gathering;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

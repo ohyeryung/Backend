@@ -38,6 +38,7 @@ public enum ErrorCode {
     // review
     ILLEGAL_GATHERING_STATUS(HttpStatus.BAD_REQUEST, "마감된 모임만 후기 등록이 가능합니다."),
     ALREADY_REVIEW_EXIST(HttpStatus.BAD_REQUEST, "참여한 모임에 대한 후기는 1회만 등록 가능합니다."),
+    REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 후기입니다."),
 
     // image
     ILLEGAL_EMPTY_FILE(HttpStatus.BAD_REQUEST, "이미지 파일은 필수 입력 값입니다."),

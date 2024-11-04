@@ -1,6 +1,10 @@
 package com.manchui.domain.controller;
 
 import com.manchui.domain.dto.*;
+import com.manchui.domain.dto.gathering.GatheringCreateRequest;
+import com.manchui.domain.dto.gathering.GatheringCreateResponse;
+import com.manchui.domain.dto.gathering.GatheringInfoResponse;
+import com.manchui.domain.dto.gathering.GatheringPagingResponse;
 import com.manchui.domain.service.GatheringService;
 import com.manchui.global.response.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;

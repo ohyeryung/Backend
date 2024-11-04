@@ -1,6 +1,7 @@
 package com.manchui.domain.entity;
 
-import com.manchui.domain.dto.ReviewCreateResponse;
+import com.manchui.domain.dto.review.ReviewCreateRequest;
+import com.manchui.domain.dto.review.ReviewCreateResponse;
 import com.manchui.global.entity.Timestamped;
 import jakarta.persistence.*;
 import lombok.*;
@@ -44,6 +45,14 @@ public class Review extends Timestamped {
                 .score(score)
                 .comment(comment)
                 .build();
+    }
+
+    public void update(ReviewCreateRequest updateRequest, User user, Gathering gathering) {
+
+        this.score = updateRequest.getScore();
+        this.comment = updateRequest.getComment();
+        this.gathering = gathering;
+        this.user = user;
     }
 
 }
