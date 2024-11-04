@@ -39,8 +39,8 @@ public class JWTFilter extends OncePerRequestFilter {
         if ((requestUri.matches("^\\/api\\/auths\\/signup$") && requestMethod.equals("POST")) ||
                 (requestUri.matches("^\\/api\\/auths\\/check-name$") && requestMethod.equals("POST")) ||
                 (requestUri.matches("^\\/api\\/auths\\/signin$") && requestMethod.equals("POST")) ||
-                (requestUri.matches("^\\/api\\/gatherings\\/public$") && requestMethod.equals("GET"))
-            ){
+                (requestUri.matches("^\\/api\\/gatherings\\/public.*$") && requestMethod.equals("GET"))
+        ) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -64,6 +64,7 @@ public class JWTFilter extends OncePerRequestFilter {
     }
 
     private String validateAccessToken(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+
         String authorization = request.getHeader("Authorization");
 
         if (authorization == null || !authorization.startsWith("Bearer ")) {
@@ -73,7 +74,7 @@ public class JWTFilter extends OncePerRequestFilter {
         }
 
         //Bearer 부분 제거 후 순수 토큰만 획득
-        String accessToken= authorization.split(" ")[1];
+        String accessToken = authorization.split(" ")[1];
 
         //응답 header에 accessToken이 없는 경우
         if (accessToken == null) {
@@ -112,6 +113,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
     // 예외 처리 응답을 직접 설정하는 메서드
     private void handleException(HttpServletResponse response, ErrorCode errorCode) {
+
         response.setStatus(errorCode.getHttpStatus().value());
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
@@ -129,4 +131,5 @@ public class JWTFilter extends OncePerRequestFilter {
             log.error("Failed to write error response", e);
         }
     }
+
 }
