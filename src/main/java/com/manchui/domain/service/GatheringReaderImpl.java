@@ -1,13 +1,10 @@
 package com.manchui.domain.service;
 
 import com.manchui.domain.dto.UserInfo;
-import com.manchui.domain.dto.review.ReviewInfo;
 import com.manchui.domain.entity.Attendance;
 import com.manchui.domain.entity.Gathering;
-import com.manchui.domain.entity.Review;
 import com.manchui.domain.repository.AttendanceRepository;
 import com.manchui.domain.repository.GatheringRepository;
-import com.manchui.domain.repository.ReviewRepository;
 import com.manchui.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -24,8 +21,6 @@ public class GatheringReaderImpl implements GatheringReader {
     private final GatheringRepository gatheringRepository;
 
     private final AttendanceRepository attendanceRepository;
-
-    private final ReviewRepository reviewRepository;
 
     @Override
     public Gathering checkGathering(Long gatheringId) {
@@ -69,17 +64,6 @@ public class GatheringReaderImpl implements GatheringReader {
                 userInfoList.add(new UserInfo(attendance.getUser().getName(), attendance.getUser().getProfileImagePath()));
         }
         return userInfoList;
-    }
-
-    @Override
-    public List<ReviewInfo> getReviewInfoList(Gathering gathering) {
-
-        List<ReviewInfo> reviewInfoList = new ArrayList<>();
-        for (Review review : reviewRepository.findByGathering(gathering)) {
-            reviewInfoList.add(new ReviewInfo(review.getUser().getName(), review.getUser().getProfileImagePath(), review.getScore(), review.getComment(), review.getCreatedAt()));
-        }
-
-        return reviewInfoList;
     }
 
     @Override
