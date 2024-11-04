@@ -20,6 +20,8 @@ public interface GatheringService {
 
     void heartGathering(String email, Long gatheringId);
 
+    void heartCancelGathering(String email, Long gatheringId);
+
     void joinCancelGathering(String username, Long gatheringId);
 
     GatheringInfoResponse getGatheringInfoByGuest(Long gatheringId);
@@ -28,6 +30,6 @@ public interface GatheringService {
 
     void cancelGathering(String email, Long gatheringId);
 
-    GatheringPagingResponse getHeartList(String email, Pageable pageable, String location, String startDate, String endDate, String category, String sort);
-
+    GatheringPagingResponse getHeartList(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort);
+    
 }
