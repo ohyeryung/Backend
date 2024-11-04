@@ -84,11 +84,11 @@ public class ReviewServiceImpl implements ReviewService {
         Review review = validateUserAndReview(email, reviewId);
 
         // 모임 검증 (취소된 모임일 경우 예외 반환)
-        gatheringReader.checkGatheringStatusIsCanceled(review.getGathering().getId());
+        Gathering gathering = gatheringReader.checkGatheringStatusIsCanceled(review.getGathering().getId());
 
         // 후기 수정
-        review.update(updateRequest, review.getUser(), review.getGathering());
-        log.info("모임 id {}의 후기 id {}이 수정되었습니다.", review.getGathering().getId(), reviewId);
+        review.update(updateRequest, review.getUser(), gathering);
+        log.info("모임 id {}의 후기 id {}이 수정되었습니다.", gathering.getId(), reviewId);
 
         return review.toResponseDto();
     }

@@ -6,6 +6,7 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +23,7 @@ import static com.manchui.domain.entity.QImage.image;
 import static com.manchui.domain.entity.QUser.user;
 import static com.querydsl.jpa.JPAExpressions.select;
 
+@Slf4j
 public class GatheringQueryDslImpl implements GatheringQueryDsl {
 
     private final JPAQueryFactory queryFactory;
@@ -74,10 +76,14 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
     // 요청 시점에 dueDate가 지난 모임의 isClosed 상태 업데이트
     private void updateIsClosedStatus() {
 
-        queryFactory.update(gathering)
+        long updatedCount = queryFactory.update(gathering)
                 .set(gathering.isClosed, true)
-                .where(gathering.dueDate.before(LocalDateTime.now()))
+                .where(gathering.dueDate.before(LocalDateTime.now())
+                        .and(gathering.isClosed.eq(false)))  // isClosed가 false인 경우만 업데이트
                 .execute();
+
+        // 상태 업데이트 로그
+        log.info("모임의 isClosed 상태가 {} 번 업데이트되었습니다.", updatedCount);
     }
 
     // 공통 쿼리
