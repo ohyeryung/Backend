@@ -11,6 +11,8 @@ public class ReviewDetailInfo {
 
     private Long gatheringId;
 
+    private String groupName;
+
     private String gatheringImage;
 
     private String category;

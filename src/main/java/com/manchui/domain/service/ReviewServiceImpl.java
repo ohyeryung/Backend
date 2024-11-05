@@ -138,7 +138,6 @@ public class ReviewServiceImpl implements ReviewService {
         return new ReviewDetailPagingResponse(reviewDetailInfoList, scoreInfo);
     }
 
-
     private Review validateUserAndReview(String email, Long reviewId) {
 
         // 유저 검증

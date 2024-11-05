@@ -115,7 +115,8 @@ public class ReviewQueryDslImpl implements ReviewQueryDsl {
     }
 
     // 전체 후기 조회 시 점수 통계 가져오는 메서드
-    public ReviewScoreInfo getScoreStatistics(String location, String query, String category, String startDate, String endDate) {
+    @Override
+    public ReviewScoreInfo getScoreStatistics(String query, String location, String category, String startDate, String endDate) {
 
         BooleanBuilder builder = new BooleanBuilder();
 
@@ -188,6 +189,7 @@ public class ReviewQueryDslImpl implements ReviewQueryDsl {
                         Projections.constructor(
                                 ReviewDetailInfo.class,
                                 gathering.id,
+                                gathering.groupName,
                                 Expressions.as(
                                         select(image.filePath)
                                                 .from(image)
