@@ -16,6 +16,6 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
     int countByGatheringAndDeletedAtIsNull(Gathering gathering);
 
-    List<Attendance> findByUserEquals(User user);
+    List<Attendance> findByUserAndDeletedAtIsNull(User user);
 
 }
