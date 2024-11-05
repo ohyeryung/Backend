@@ -14,6 +14,8 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -102,7 +104,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         redisRefreshTokenService.saveAccessToken(userEmail, access, accessTokenExpiration);
 
         response.setHeader("Authorization", "Bearer " + access);
-        response.addCookie(createCookie("refresh", refresh));
+        setResponseCookie(response, "refresh", refresh);
 
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("application/json");
@@ -116,6 +118,17 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
                 "}";
 
         response.getWriter().write(jsonResponse);
+    }
+
+    private void setResponseCookie(HttpServletResponse response, String key, String value) {
+        ResponseCookie cookie = ResponseCookie.from(key, value)
+                .maxAge(24 * 60 * 60)
+                .sameSite("None")
+                .secure(true)
+                .httpOnly(true)
+                .path("/")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
     //로그인 실패시 실행
