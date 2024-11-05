@@ -51,10 +51,11 @@ public class ReviewController {
                                                                                     @RequestParam(required = false) String startDate,
                                                                                     @RequestParam(required = false) String endDate,
                                                                                     @RequestParam(required = false) String category,
-                                                                                    @RequestParam(required = false) String sort) {
+                                                                                    @RequestParam(required = false) String sort,
+                                                                                    @RequestParam(defaultValue = "-1") int score) {
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
-        return ResponseEntity.ok(SuccessResponse.successWithData(reviewService.searchReview(pageable, query, location, startDate, endDate, category, sort)));
+        return ResponseEntity.ok(SuccessResponse.successWithData(reviewService.searchReview(pageable, query, location, startDate, endDate, category, sort, score)));
     }
 
 }

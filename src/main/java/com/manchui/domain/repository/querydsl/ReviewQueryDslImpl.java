@@ -116,12 +116,12 @@ public class ReviewQueryDslImpl implements ReviewQueryDsl {
 
     // 전체 후기 조회 시 점수 통계 가져오는 메서드
     @Override
-    public ReviewScoreInfo getScoreStatistics(String query, String location, String category, String startDate, String endDate) {
+    public ReviewScoreInfo getScoreStatistics(String query, String location, String category, String startDate, String endDate, int score) {
 
         BooleanBuilder builder = new BooleanBuilder();
 
         // 조건에 맞는 필터링 추가
-        applyFiltersForStatistics(builder, query, location, startDate, endDate, category);
+        applyFiltersForStatistics(builder, query, location, startDate, endDate, category, score);
 
         // 평균 점수 계산
         Double avgScore = queryFactory
@@ -159,8 +159,8 @@ public class ReviewQueryDslImpl implements ReviewQueryDsl {
 
 
     // 필터링 조건을 적용하는 메서드 (통계 전용)
-    private void applyFiltersForStatistics(BooleanBuilder builder, String query, String location, String startDate, String endDate, String category) {
-        
+    private void applyFiltersForStatistics(BooleanBuilder builder, String query, String location, String startDate, String endDate, String category, Integer score) {
+
         if (query != null && !query.isEmpty()) {
             builder.and(review.comment.contains(query)
                     .or(gathering.groupName.contains(query)));
@@ -179,10 +179,15 @@ public class ReviewQueryDslImpl implements ReviewQueryDsl {
             LocalDate end = LocalDate.parse(endDate);
             builder.and(review.createdAt.between(start.atStartOfDay(), end.atTime(23, 59, 59)));
         }
+
+        if (score != -1) {
+            builder.and(review.score.eq(score));
+        }
+
     }
 
     @Override
-    public Page<ReviewDetailInfo> getReviewDetailInfo(Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort) {
+    public Page<ReviewDetailInfo> getReviewDetailInfo(Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort, int score) {
 
         JPAQuery<ReviewDetailInfo> queryBuilder = queryFactory
                 .select(
@@ -212,7 +217,7 @@ public class ReviewQueryDslImpl implements ReviewQueryDsl {
                 .leftJoin(review.user, user);
 
         // 필터링 적용
-        applyFilters(queryBuilder, query, location, startDate, endDate, category, sort);
+        applyFilters(queryBuilder, query, location, startDate, endDate, category, sort, score);
 
         // 페이징 적용
         List<ReviewDetailInfo> reviewDetailInfoList = queryBuilder
@@ -262,7 +267,7 @@ public class ReviewQueryDslImpl implements ReviewQueryDsl {
     }
 
     // 필터링 적용
-    private void applyFilters(JPAQuery<ReviewDetailInfo> queryBuilder, String query, String location, String startDate, String endDate, String category, String sort) {
+    private void applyFilters(JPAQuery<ReviewDetailInfo> queryBuilder, String query, String location, String startDate, String endDate, String category, String sort, Integer score) {
 
         if (query != null && !query.isEmpty()) {
             queryBuilder.where(review.comment.contains(query)
@@ -290,6 +295,10 @@ public class ReviewQueryDslImpl implements ReviewQueryDsl {
             queryBuilder.orderBy(review.score.asc());
         } else {
             queryBuilder.orderBy(review.createdAt.desc());
+        }
+
+        if (score != -1) {
+            queryBuilder.where(review.score.eq(score));
         }
     }
 

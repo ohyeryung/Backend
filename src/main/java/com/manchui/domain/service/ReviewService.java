@@ -15,6 +15,6 @@ public interface ReviewService {
 
     void deleteReview(String email, Long reviewId);
 
-    ReviewDetailPagingResponse searchReview(Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort);
+    ReviewDetailPagingResponse searchReview(Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort, int score);
 
 }

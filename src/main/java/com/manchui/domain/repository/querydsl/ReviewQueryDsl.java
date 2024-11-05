@@ -10,10 +10,10 @@ public interface ReviewQueryDsl {
 
     ReviewScoreInfo getScoreStatisticsByGathering(Long gatheringId);
 
-    ReviewScoreInfo getScoreStatistics(String query, String location, String category, String startDate, String endDate);
+    ReviewScoreInfo getScoreStatistics(String query, String location, String category, String startDate, String endDate, int score);
 
     Page<ReviewInfo> getReviewInfoList(Pageable pageable, Long gatheringId);
 
-    Page<ReviewDetailInfo> getReviewDetailInfo(Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort);
+    Page<ReviewDetailInfo> getReviewDetailInfo(Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort, int score);
 
 }
