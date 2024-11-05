@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -111,7 +112,7 @@ public class UserService {
         User user = userRepository.findByEmail(userEmail);
 
         //유저 모임 참여 엔티티 조회
-        List<Attendance> userAttendance = attendanceRepository.findByUserEquals(user);
+        List<Attendance> userAttendance = attendanceRepository.findByUserAndDeletedAtIsNull(user);
         List<Long> gatheringIdList = new ArrayList<>();
         //참여한 모임 ID 목록
         for (Attendance attendance : userAttendance) {
@@ -156,4 +157,60 @@ public class UserService {
                 writtenReviewInfos.getSize(), writtenReviewInfos.getNumber(), writtenReviewInfos.getTotalPages());
     }
 
+    //리뷰 작성 가능한 모임 목록 조회
+    public UserReviewableGatheringsResponse getReviewableGatherings(String userEmail, Pageable pageable) {
+
+        User user = userRepository.findByEmail(userEmail);
+        //참가 취소하지 않은 Attendance 조회
+        List<Attendance> attendances = attendanceRepository.findByUserAndDeletedAtIsNull(user);
+
+        //참가한 모임 Id 리스트
+        List<Long> attendedGatheringIds = new ArrayList<>();
+
+        for (Attendance attendance : attendances) {
+            //모임 취소 X, 삭제 X, 모임의 모임 날짜를 지난 경우
+            if (!attendance.getGathering().isCanceled() && attendance.getGathering().getDeletedAt() == null
+                    && attendance.getGathering().getGatheringDate().isBefore(LocalDateTime.now())) {
+                attendedGatheringIds.add(attendance.getGathering().getId());
+            }
+        }
+
+        //삭제하지 않은 리뷰 리스트
+        List<Review> reviews = reviewRepository.findByUserAndDeletedAtIsNull(user);
+
+        //리뷰 작성한 모임 id 리스트
+        List<Long> reviewedGatheringIds = new ArrayList<>();
+        for (Review review : reviews) {
+            //작성한 리뷰의 모임이 취소 X, 삭제 X, 모임의 모임 날짜를 지난 경우
+            if (!review.getGathering().isCanceled() && review.getGathering().getDeletedAt() == null
+                    && review.getGathering().getGatheringDate().isBefore(LocalDateTime.now()) ) {
+                reviewedGatheringIds.add(review.getGathering().getId());
+            }
+        }
+
+        //리뷰 작성 가능한 모임Id 리스트
+        List<Long> reviewableGatheringIds = new ArrayList<>();
+
+        for (Long attendedGatheringId : attendedGatheringIds) {
+            //참여한 모임에서 리뷰 작성하지 않은 모임인 경우
+            if (!reviewedGatheringIds.contains(attendedGatheringId)) {
+                reviewableGatheringIds.add(attendedGatheringId);
+            }
+        }
+        //리뷰 작성한 모임 페이징 조회
+        Page<Gathering> reviewableGatheringInfos = gatheringRepository.findByIdIn(reviewableGatheringIds, pageable);
+
+        //ReviewableGatheringInfo DTO에 맞게 변환
+        Page<ReviewableGatheringInfo> map = reviewableGatheringInfos.map(m -> {
+
+            String filePath = imageRepository.findByGatheringId(m.getId()).getFilePath();
+            int participantUsers = attendanceRepository.countByGatheringAndDeletedAtIsNull(m);
+
+            return new ReviewableGatheringInfo(m.getId(), m.getGroupName(), m.getCategory(),
+                    m.getLocation(), filePath, m.getGatheringDate(), m.getMaxUsers(),
+                    participantUsers, m.getCreatedAt(), m.getUpdatedAt());
+        });
+
+        return new UserReviewableGatheringsResponse(map.getNumberOfElements(), map, map.getSize(), map.getNumber(), map.getTotalPages());
+    }
 }

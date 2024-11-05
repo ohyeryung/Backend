@@ -69,11 +69,21 @@ public class UserController {
     }
 
     @GetMapping("/api/users/reviews")
-    public ResponseEntity<SuccessResponse<UserWrittenReviewsResponse>> getWrittenReviews
+    public ResponseEntity<SuccessResponse<UserWrittenReviewsResponse>> getReviewableGatherings
             (@AuthenticationPrincipal CustomUserDetails customUserDetails,
              @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
         UserWrittenReviewsResponse response = userService.getWrittenReviews(customUserDetails.getUsername(), pageable);
+
+        return ResponseEntity.ok(SuccessResponse.successWithData(response));
+    }
+
+    @GetMapping("/api/users/reviewable/list")
+    public ResponseEntity<SuccessResponse<UserReviewableGatheringsResponse>> getWritableGatherings(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+
+        UserReviewableGatheringsResponse response = userService.getReviewableGatherings(customUserDetails.getUsername(), pageable);
 
         return ResponseEntity.ok(SuccessResponse.successWithData(response));
     }
