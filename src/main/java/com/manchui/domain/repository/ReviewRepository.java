@@ -18,5 +18,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long>, ReviewQue
     List<Review> findByGathering(Gathering gathering);
 
     Page<Review> findByUser(User user, Pageable pageable);
+    Optional<Review> findByIdAndDeletedAtIsNull(Long reviewId);
 
 }

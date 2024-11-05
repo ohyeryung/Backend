@@ -1,12 +1,20 @@
 package com.manchui.domain.service;
 
-import com.manchui.domain.dto.*;
+import com.manchui.domain.dto.UserInfo;
+import com.manchui.domain.dto.gathering.GatheringCreateRequest;
+import com.manchui.domain.dto.gathering.GatheringCreateResponse;
+import com.manchui.domain.dto.gathering.GatheringInfoResponse;
+import com.manchui.domain.dto.gathering.GatheringPagingResponse;
+import com.manchui.domain.dto.review.ReviewDetailPagingResponse;
+import com.manchui.domain.dto.review.ReviewInfo;
+import com.manchui.domain.dto.review.ReviewScoreInfo;
 import com.manchui.domain.entity.*;
 import com.manchui.domain.repository.*;
 import com.manchui.global.exception.CustomException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -124,6 +132,7 @@ public class GatheringServiceImpl implements GatheringService {
      * @param gatheringId 모임 id
      */
     @Override
+    @Transactional
     public void joinGathering(String email, Long gatheringId) {
 
         // 유저 및 모임 객체 검증
@@ -155,31 +164,7 @@ public class GatheringServiceImpl implements GatheringService {
     }
 
     /**
-     * 3. 모임 좋아요
-     * 작성자: 오예령
-     *
-     * @param email       유저 email
-     * @param gatheringId 모임 id
-     */
-    @Override
-    @Transactional
-    public void heartGathering(String email, Long gatheringId) {
-
-        // 유저 및 모임 객체 검증
-        User user = userService.checkUser(email);
-        Gathering gathering = gatheringReader.checkGatheringStatus(gatheringId);
-
-        heartRepository.findByUserAndGathering(user, gathering)
-                .ifPresent(heart -> {
-                    log.warn("사용자 {}가 모임 id {}에 이미 좋아요를 눌렀습니다.", user.getName(), gatheringId);
-                    throw new CustomException(ALREADY_HEART_GATHERING);
-                });
-
-        heartRepository.save(Heart.builder().gathering(gathering).user(user).build());
-    }
-
-    /**
-     * 4. 모임 참여 신청 취소
+     * 3. 모임 참여 신청 취소
      * 작성자: 오예령
      *
      * @param email       유저 email
@@ -210,34 +195,86 @@ public class GatheringServiceImpl implements GatheringService {
     }
 
     /**
-     * 5. 모임 상세 조회 (비회원)
+     * 4. 모임 좋아요
      * 작성자: 오예령
      *
+     * @param email       유저 email
      * @param gatheringId 모임 id
-     * @return 해당하는 모임의 상세 내용
      */
     @Override
-    public GatheringInfoResponse getGatheringInfoByGuest(Long gatheringId) {
+    @Transactional
+    public void heartGathering(String email, Long gatheringId) {
 
-        return createGatheringInfoResponse(gatheringId, false, null);
+        // 유저 및 모임 객체 검증
+        User user = userService.checkUser(email);
+        Gathering gathering = gatheringReader.checkGatheringStatus(gatheringId);
+
+        heartRepository.findByUserAndGathering(user, gathering)
+                .ifPresent(heart -> {
+                    log.warn("사용자 {}가 모임 id {}에 이미 좋아요를 눌렀습니다.", user.getName(), gatheringId);
+                    throw new CustomException(ALREADY_HEART_GATHERING);
+                });
+
+        heartRepository.save(Heart.builder().gathering(gathering).user(user).build());
     }
 
     /**
-     * 4-1. 모임 상세 조회 (회원)
+     * 5. 모임 좋아요 취소
+     * 작성자: 오예령
+     *
+     * @param email       유저 email
+     * @param gatheringId 모임 id
+     */
+    @Override
+    @Transactional
+    public void heartCancelGathering(String email, Long gatheringId) {
+
+        // 유저 및 모임 객체 검증
+        User user = userService.checkUser(email);
+        Gathering gathering = gatheringReader.checkGatheringStatus(gatheringId);
+
+        Optional<Heart> heartOptional = heartRepository.findByUserAndGathering(user, gathering);
+
+        // 좋아요가 없으면 예외 처리
+        if (heartOptional.isEmpty()) {
+            log.warn("사용자 {}가 모임 id {}에 좋아요를 누른 내역이 없습니다.", user.getName(), gatheringId);
+            throw new CustomException(HEART_NOT_EXIST);
+        }
+
+        // 좋아요 취소 로직 (필요한 경우 추가)
+        heartRepository.delete(heartOptional.get());
+    }
+
+    /**
+     * 6. 모임 상세 조회 (비회원)
+     * 작성자: 오예령
+     *
+     * @param gatheringId 모임 id
+     * @param pageable    페이징 처리 시 필요한 항목
+     * @return 해당하는 모임의 상세 내용
+     */
+    @Override
+    public GatheringInfoResponse getGatheringInfoByGuest(Long gatheringId, Pageable pageable) {
+
+        return createGatheringInfoResponse(gatheringId, pageable, false, null);
+    }
+
+    /**
+     * 6-1. 모임 상세 조회 (회원)
      *
      * @param email       유저 email
      * @param gatheringId 모임 id
      * @return 해당하는 모임의 상세 내용
      */
     @Override
-    public GatheringInfoResponse getGatheringInfoByUser(String email, Long gatheringId) {
+    public GatheringInfoResponse getGatheringInfoByUser(String email, Long gatheringId, Pageable pageable) {
 
         User user = userService.checkUser(email);
-        return createGatheringInfoResponse(gatheringId, true, user);
+        return createGatheringInfoResponse(gatheringId, pageable, true, user);
     }
 
     /**
-     * 5. 모임 모집 취소
+     * 7. 모임 모집 취소
      * 작성자: 오예령
      *
      * @param email       유저 email
@@ -258,7 +295,7 @@ public class GatheringServiceImpl implements GatheringService {
     }
 
     /**
-     * 6. 찜한 모임 목록 조회
+     * 8. 찜한 모임 목록 조회
      * 작성자: 오예령
      *
      * @param email     유저 email
@@ -272,9 +309,9 @@ public class GatheringServiceImpl implements GatheringService {
      */
     @Override
     @Transactional
-    public GatheringPagingResponse getHeartList(String email, Pageable pageable, String location, String startDate, String endDate, String category, String sort) {
+    public GatheringPagingResponse getHeartList(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort) {
 
-        return new GatheringPagingResponse(gatheringRepository.getHeartList(email, pageable, location, startDate, endDate, category, sort));
+        return new GatheringPagingResponse(gatheringRepository.getHeartList(email, pageable, query, location, startDate, endDate, category, sort));
     }
 
     // 참여 여부 판단
@@ -290,13 +327,13 @@ public class GatheringServiceImpl implements GatheringService {
     }
 
     // 상세 조회 응답 객체 생성
-    private GatheringInfoResponse createGatheringInfoResponse(Long gatheringId, boolean isUser, User user) {
+    private GatheringInfoResponse createGatheringInfoResponse(Long gatheringId, Pageable pageable, boolean isUser, User user) {
 
+        log.info("모임 id {} 의 상세 조회 응답 객체 생성 중입니다.", gatheringId);
         Gathering gathering = gatheringReader.checkGathering(gatheringId);
         List<UserInfo> userInfoList = gatheringReader.getUserInfoList(gathering);
 
-        // TODO : 추후 페이징 처리 추가 예정 ? -> OR 후기 목록 조회 API로 분리할 가능성도 있음
-        List<ReviewInfo> reviewInfoList = gatheringReader.getReviewInfoList(gathering);
+        ReviewDetailPagingResponse reviewsList = getReviews(pageable, gatheringId);
 
         Image image = imageRepository.findByGatheringId(gatheringId);
 
@@ -305,7 +342,17 @@ public class GatheringServiceImpl implements GatheringService {
 
         boolean isHearted = isUser && heartRepository.findByUserAndGathering(user, gathering).isPresent();
 
-        return new GatheringInfoResponse(gathering, image.getFilePath(), currentUsers, isHearted, userInfoList, reviewInfoList);
+        return new GatheringInfoResponse(gathering, image.getFilePath(), currentUsers, isHearted, userInfoList, reviewsList);
     }
+
+    // 상세 조회 후기 관련 응답 객체 생성
+    public ReviewDetailPagingResponse getReviews(Pageable pageable, Long gatheringId) {
+
+        Page<ReviewInfo> pageList = reviewRepository.getReviewInfoList(pageable, gatheringId);
+        ReviewScoreInfo scoreInfo = reviewRepository.getScoreStatistics(gatheringId);
+
+        return new ReviewDetailPagingResponse(pageList, scoreInfo);
+    }
+
 
 }

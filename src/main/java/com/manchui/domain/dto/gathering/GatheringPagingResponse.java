@@ -1,4 +1,4 @@
-package com.manchui.domain.dto;
+package com.manchui.domain.dto.gathering;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,18 +9,18 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
-public class ReviewPagingResponse {
+public class GatheringPagingResponse {
 
-    private int reviewCount;
-    private List<?> reviewList = new ArrayList<>();
+    private int gatheringCount;
+    private List<?> gatheringList = new ArrayList<>();
     private int pageSize;
     private int page;
     private int totalPage;
 
-    public ReviewPagingResponse(Page<?> pageList) {
+    public GatheringPagingResponse(Page<?> pageList) {
 
-        this.reviewCount = (int) pageList.getTotalElements();
-        this.reviewList = pageList.getContent();
+        this.gatheringCount = (int) pageList.getTotalElements();
+        this.gatheringList = pageList.getContent();
         this.pageSize = pageList.getSize();
         this.page = pageList.getPageable().getPageNumber();
         this.totalPage = pageList.getTotalPages();

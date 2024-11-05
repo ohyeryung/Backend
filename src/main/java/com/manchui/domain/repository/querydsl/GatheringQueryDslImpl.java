@@ -1,11 +1,12 @@
 package com.manchui.domain.repository.querydsl;
 
-import com.manchui.domain.dto.GatheringListResponse;
+import com.manchui.domain.dto.gathering.GatheringListResponse;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +23,7 @@ import static com.manchui.domain.entity.QImage.image;
 import static com.manchui.domain.entity.QUser.user;
 import static com.querydsl.jpa.JPAExpressions.select;
 
+@Slf4j
 public class GatheringQueryDslImpl implements GatheringQueryDsl {
 
     private final JPAQueryFactory queryFactory;
@@ -47,9 +49,9 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
 
     // 찜한 모임 목록 조회
     @Override
-    public Page<GatheringListResponse> getHeartList(String email, Pageable pageable, String location, String startDate, String endDate, String category, String sort) {
+    public Page<GatheringListResponse> getHeartList(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort) {
 
-        return getGatheringList(email, pageable, null, location, startDate, endDate, category, sort, true);
+        return getGatheringList(email, pageable, query, location, startDate, endDate, category, sort, true);
     }
 
     // 공통 모임 목록 조회 로직
@@ -58,22 +60,30 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
         return getGatheringList(email, pageable, query, location, startDate, endDate, category, sort, false);
     }
 
-    // 공통 모임 목록 조회 로직 (찜한 모임 포함 여부)
+    // Gathering 목록 쿼리를 수행하고 필터를 적용하는 메서드
     private Page<GatheringListResponse> getGatheringList(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort, boolean isHeartList) {
 
         updateIsClosedStatus(); // 상태 업데이트
         JPAQuery<GatheringListResponse> queryBuilder = buildBaseQuery(email, isHeartList);
         applyFilters(queryBuilder, query, location, startDate, endDate, category, sort);
+
+        // dueDate 체크: 이 조건은 이미 상태 업데이트 로직에서 처리됨
+        queryBuilder.where(gathering.dueDate.after(LocalDateTime.now()));
+
         return executePagedQuery(queryBuilder, pageable);
     }
 
     // 요청 시점에 dueDate가 지난 모임의 isClosed 상태 업데이트
     private void updateIsClosedStatus() {
 
-        queryFactory.update(gathering)
+        long updatedCount = queryFactory.update(gathering)
                 .set(gathering.isClosed, true)
-                .where(gathering.dueDate.before(LocalDateTime.now()))
+                .where(gathering.dueDate.before(LocalDateTime.now())
+                        .and(gathering.isClosed.eq(false)))  // isClosed가 false인 경우만 업데이트
                 .execute();
+
+        // 상태 업데이트 로그
+        log.info("모임의 isClosed 상태가 {} 번 업데이트되었습니다.", updatedCount);
     }
 
     // 공통 쿼리
@@ -109,7 +119,7 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
                         gathering.createdAt,
                         gathering.updatedAt,
                         gathering.deletedAt,
-                        isHeartList ? Expressions.as(
+                        (email != null ? Expressions.as(
                                 select(heart.count())
                                         .from(heart)
                                         .where(
@@ -117,7 +127,7 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
                                                         .and(heart.gathering.id.eq(gathering.id))
                                         ).gt(0L),
                                 "isHearted"
-                        ) : gathering.isHearted
+                        ) : Expressions.constant(false))
                 ))
                 .from(gathering)
                 .leftJoin(gathering.user, user)
@@ -161,7 +171,7 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
         }
     }
 
-    // 페이징 처리 목록 생성
+    // 페이징 처리된 쿼리 결과를 실행하는 메서드
     private Page<GatheringListResponse> executePagedQuery(JPAQuery<GatheringListResponse> queryBuilder, Pageable pageable) {
 
         List<GatheringListResponse> gatheringList = queryBuilder

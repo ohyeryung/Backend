@@ -11,6 +11,8 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.time.format.DateTimeParseException;
+
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -88,6 +90,18 @@ public class GlobalExceptionHandler {
                 .httpStatus(errorCode.getHttpStatus());
 
         return ResponseEntity.status(errorCode.getHttpStatus()).body(response);
+    }
+
+    @ExceptionHandler(value = {DateTimeParseException.class})
+    protected ResponseEntity<ErrorResponse> handleDateTimeParseException(DateTimeParseException ex) {
+
+        log.error("handleDateTimeParseException", ex);
+
+        ErrorResponse response = ErrorResponse.create()
+                .message(ex.getMessage())
+                .httpStatus(HttpStatus.BAD_REQUEST);
+
+        return ResponseEntity.badRequest().body(response);
     }
 
 }

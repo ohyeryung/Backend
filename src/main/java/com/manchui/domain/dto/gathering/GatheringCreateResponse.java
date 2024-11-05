@@ -1,4 +1,4 @@
-package com.manchui.domain.dto;
+package com.manchui.domain.dto.gathering;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -46,4 +46,5 @@ public class GatheringCreateResponse {
     private LocalDateTime deletedAt;
 
     private boolean isHearted;
+
 }

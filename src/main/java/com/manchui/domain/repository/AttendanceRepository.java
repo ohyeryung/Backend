@@ -3,7 +3,6 @@ package com.manchui.domain.repository;
 import com.manchui.domain.entity.Attendance;
 import com.manchui.domain.entity.Gathering;
 import com.manchui.domain.entity.User;
-import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

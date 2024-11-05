@@ -1,13 +1,10 @@
 package com.manchui.domain.service;
 
-import com.manchui.domain.dto.ReviewInfo;
 import com.manchui.domain.dto.UserInfo;
 import com.manchui.domain.entity.Attendance;
 import com.manchui.domain.entity.Gathering;
-import com.manchui.domain.entity.Review;
 import com.manchui.domain.repository.AttendanceRepository;
 import com.manchui.domain.repository.GatheringRepository;
-import com.manchui.domain.repository.ReviewRepository;
 import com.manchui.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -24,8 +21,6 @@ public class GatheringReaderImpl implements GatheringReader {
     private final GatheringRepository gatheringRepository;
 
     private final AttendanceRepository attendanceRepository;
-
-    private final ReviewRepository reviewRepository;
 
     @Override
     public Gathering checkGathering(Long gatheringId) {
@@ -50,7 +45,7 @@ public class GatheringReaderImpl implements GatheringReader {
     }
 
     @Override
-    public Gathering checkGatheringStatusClosed(Long gatheringId) {
+    public Gathering checkGatheringStatusIsClosed(Long gatheringId) {
 
         Gathering gathering = checkGathering(gatheringId);
 
@@ -72,14 +67,17 @@ public class GatheringReaderImpl implements GatheringReader {
     }
 
     @Override
-    public List<ReviewInfo> getReviewInfoList(Gathering gathering) {
+    public Gathering checkGatheringStatusIsCanceled(Long gatheringId) {
 
-        List<ReviewInfo> reviewInfoList = new ArrayList<>();
-        for (Review review : reviewRepository.findByGathering(gathering)) {
-            reviewInfoList.add(new ReviewInfo(review.getUser().getName(), review.getUser().getProfileImagePath(), review.getScore(), review.getComment(), review.getCreatedAt()));
+        Gathering gathering = checkGathering(gatheringId);
+
+        // 모임이 취소된 경우 예외 발생
+        if (gathering.isCanceled()) {
+            throw new CustomException(GATHERING_CANCELED);
         }
 
-        return reviewInfoList;
+        return gathering;
     }
+
 
 }

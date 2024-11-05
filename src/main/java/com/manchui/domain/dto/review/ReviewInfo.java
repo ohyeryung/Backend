@@ -1,4 +1,4 @@
-package com.manchui.domain.dto;
+package com.manchui.domain.dto.review;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,5 +14,6 @@ public class ReviewInfo {
     private int score;
     private String comment;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
 }
