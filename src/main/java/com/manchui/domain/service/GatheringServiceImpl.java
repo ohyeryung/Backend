@@ -349,7 +349,7 @@ public class GatheringServiceImpl implements GatheringService {
     public ReviewDetailPagingResponse getReviews(Pageable pageable, Long gatheringId) {
 
         Page<ReviewInfo> pageList = reviewRepository.getReviewInfoList(pageable, gatheringId);
-        ReviewScoreInfo scoreInfo = reviewRepository.getScoreStatistics(gatheringId);
+        ReviewScoreInfo scoreInfo = reviewRepository.getScoreStatisticsByGathering(gatheringId);
 
         return new ReviewDetailPagingResponse(pageList, scoreInfo);
     }
