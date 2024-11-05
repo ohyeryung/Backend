@@ -1,14 +1,8 @@
 package com.manchui.domain.service;
 
 import com.manchui.domain.dto.User.*;
-import com.manchui.domain.entity.Attendance;
-import com.manchui.domain.entity.Image;
-import com.manchui.domain.entity.User;
-import com.manchui.domain.entity.Gathering;
-import com.manchui.domain.repository.AttendanceRepository;
-import com.manchui.domain.repository.GatheringRepository;
-import com.manchui.domain.repository.ImageRepository;
-import com.manchui.domain.repository.UserRepository;
+import com.manchui.domain.entity.*;
+import com.manchui.domain.repository.*;
 import com.manchui.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -32,6 +26,7 @@ public class UserService {
     private final ImageRepository imageRepository;
     private final GatheringRepository gatheringRepository;
     private final AttendanceRepository attendanceRepository;
+    private final ReviewRepository reviewRepository;
 
     // 유저 객체 검증
     public User checkUser(String email) {
@@ -140,4 +135,25 @@ public class UserService {
         return new UserParticipatedGatheringResponse(gatheringList.getNumberOfElements(), participatedGatheringList
                 , participatedGatheringList.getSize(), participatedGatheringList.getNumber(), participatedGatheringList.getTotalPages());
     }
+
+    //내가 작성한 목록 조회
+    public UserWrittenReviewsResponse getWrittenReviews(String userEmail, Pageable pageable) {
+
+        User user = userRepository.findByEmail(userEmail);
+        //리뷰 페이징 조회
+        Page<Review> reviews = reviewRepository.findByUser(user, pageable);
+        //사용자가 작성한 리뷰정보 DTO로 매핑
+        Page<WrittenReviewInfo> writtenReviewInfos = reviews.map(m -> {
+
+            String filePath = imageRepository.findByGatheringId(m.getGathering().getId()).getFilePath();
+
+            return new WrittenReviewInfo(m.getGathering().getId(), m.getScore(),
+                    m.getGathering().getGroupName(), m.getGathering().getCategory(),
+                    m.getGathering().getLocation(), filePath, m.getGathering().getGatheringDate(), m.getCreatedAt(), m.getUpdatedAt());
+        });
+        //응답 데이터 반환
+        return new UserWrittenReviewsResponse(writtenReviewInfos.getNumberOfElements(), writtenReviewInfos,
+                writtenReviewInfos.getSize(), writtenReviewInfos.getNumber(), writtenReviewInfos.getTotalPages());
+    }
+
 }
