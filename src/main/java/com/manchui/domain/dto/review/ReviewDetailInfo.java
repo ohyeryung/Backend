@@ -7,11 +7,21 @@ import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
-public class ReviewInfo {
+public class ReviewDetailInfo {
+
+    private Long gatheringId;
+
+    private String gatheringImage;
+
+    private String category;
+
+    private String location;
 
     private String name;
 
     private String profileImagePath;
+
+    private Long reviewId;
 
     private int score;
 
