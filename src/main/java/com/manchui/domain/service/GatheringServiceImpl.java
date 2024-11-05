@@ -1,6 +1,6 @@
 package com.manchui.domain.service;
 
-import com.manchui.domain.dto.*;
+import com.manchui.domain.dto.UserInfo;
 import com.manchui.domain.dto.gathering.GatheringCreateRequest;
 import com.manchui.domain.dto.gathering.GatheringCreateResponse;
 import com.manchui.domain.dto.gathering.GatheringInfoResponse;
@@ -184,7 +184,35 @@ public class GatheringServiceImpl implements GatheringService {
     }
 
     /**
-     * 4. 모임 참여 신청 취소
+     * 4. 모임 좋아요 취소
+     * 작성자: 오예령
+     *
+     * @param email       유저 email
+     * @param gatheringId 모임 id
+     */
+    @Override
+    @Transactional
+    public void heartCancelGathering(String email, Long gatheringId) {
+
+        // 유저 및 모임 객체 검증
+        User user = userService.checkUser(email);
+        Gathering gathering = gatheringReader.checkGatheringStatus(gatheringId);
+
+        Optional<Heart> heartOptional = heartRepository.findByUserAndGathering(user, gathering);
+
+        // 좋아요가 없으면 예외 처리
+        if (heartOptional.isEmpty()) {
+            log.warn("사용자 {}가 모임 id {}에 좋아요를 누른 내역이 없습니다.", user.getName(), gatheringId);
+            throw new CustomException(HEART_NOT_EXIST);
+        }
+
+        // 좋아요 취소 로직 (필요한 경우 추가)
+        heartRepository.delete(heartOptional.get());
+    }
+
+
+    /**
+     * 5. 모임 참여 신청 취소
      * 작성자: 오예령
      *
      * @param email       유저 email
@@ -215,7 +243,7 @@ public class GatheringServiceImpl implements GatheringService {
     }
 
     /**
-     * 5. 모임 상세 조회 (비회원)
+     * 6. 모임 상세 조회 (비회원)
      * 작성자: 오예령
      *
      * @param gatheringId 모임 id
@@ -228,7 +256,7 @@ public class GatheringServiceImpl implements GatheringService {
     }
 
     /**
-     * 4-1. 모임 상세 조회 (회원)
+     * 6-1. 모임 상세 조회 (회원)
      *
      * @param email       유저 email
      * @param gatheringId 모임 id
@@ -242,7 +270,7 @@ public class GatheringServiceImpl implements GatheringService {
     }
 
     /**
-     * 5. 모임 모집 취소
+     * 7. 모임 모집 취소
      * 작성자: 오예령
      *
      * @param email       유저 email
@@ -263,7 +291,7 @@ public class GatheringServiceImpl implements GatheringService {
     }
 
     /**
-     * 6. 찜한 모임 목록 조회
+     * 8. 찜한 모임 목록 조회
      * 작성자: 오예령
      *
      * @param email     유저 email
@@ -277,9 +305,9 @@ public class GatheringServiceImpl implements GatheringService {
      */
     @Override
     @Transactional
-    public GatheringPagingResponse getHeartList(String email, Pageable pageable, String location, String startDate, String endDate, String category, String sort) {
+    public GatheringPagingResponse getHeartList(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort) {
 
-        return new GatheringPagingResponse(gatheringRepository.getHeartList(email, pageable, location, startDate, endDate, category, sort));
+        return new GatheringPagingResponse(gatheringRepository.getHeartList(email, pageable, query, location, startDate, endDate, category, sort));
     }
 
     // 참여 여부 판단
@@ -297,10 +325,11 @@ public class GatheringServiceImpl implements GatheringService {
     // 상세 조회 응답 객체 생성
     private GatheringInfoResponse createGatheringInfoResponse(Long gatheringId, boolean isUser, User user) {
 
+        log.info("모임 id {} 의 상세 조회 응답 객체 생성 중입니다.", gatheringId);
         Gathering gathering = gatheringReader.checkGathering(gatheringId);
         List<UserInfo> userInfoList = gatheringReader.getUserInfoList(gathering);
 
-        // TODO : 추후 페이징 처리 추가 예정 ? -> OR 후기 목록 조회 API로 분리할 가능성도 있음
+        // TODO : 추후 페이징 처리 추가 예정
         List<ReviewInfo> reviewInfoList = gatheringReader.getReviewInfoList(gathering);
 
         Image image = imageRepository.findByGatheringId(gatheringId);
