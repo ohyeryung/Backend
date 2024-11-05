@@ -3,10 +3,14 @@ package com.manchui.domain.controller;
 import com.manchui.domain.dto.CustomUserDetails;
 import com.manchui.domain.dto.review.ReviewCreateRequest;
 import com.manchui.domain.dto.review.ReviewCreateResponse;
+import com.manchui.domain.dto.review.ReviewDetailPagingResponse;
 import com.manchui.domain.service.ReviewService;
 import com.manchui.global.response.SuccessResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -37,6 +41,20 @@ public class ReviewController {
 
         reviewService.deleteReview(userDetails.getUsername(), reviewId);
         return ResponseEntity.ok().body(SuccessResponse.successWithNoData("후기가 정상적으로 삭제되었습니다."));
+    }
+
+    @GetMapping("")
+    public ResponseEntity<SuccessResponse<ReviewDetailPagingResponse>> searchReview(@RequestParam(defaultValue = "1") int page,
+                                                                                    @RequestParam int size,
+                                                                                    @RequestParam(required = false) String query,
+                                                                                    @RequestParam(required = false) String location,
+                                                                                    @RequestParam(required = false) String startDate,
+                                                                                    @RequestParam(required = false) String endDate,
+                                                                                    @RequestParam(required = false) String category,
+                                                                                    @RequestParam(required = false) String sort) {
+
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        return ResponseEntity.ok(SuccessResponse.successWithData(reviewService.searchReview(pageable, query, location, startDate, endDate, category, sort)));
     }
 
 }

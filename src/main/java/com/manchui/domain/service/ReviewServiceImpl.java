@@ -1,7 +1,6 @@
 package com.manchui.domain.service;
 
-import com.manchui.domain.dto.review.ReviewCreateRequest;
-import com.manchui.domain.dto.review.ReviewCreateResponse;
+import com.manchui.domain.dto.review.*;
 import com.manchui.domain.entity.Attendance;
 import com.manchui.domain.entity.Gathering;
 import com.manchui.domain.entity.Review;
@@ -12,6 +11,8 @@ import com.manchui.global.exception.CustomException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -112,6 +113,29 @@ public class ReviewServiceImpl implements ReviewService {
         // 후기 소프트 삭제
         review.softDelete();
         log.info("모임 id {}의 후기 id {}이 삭제되었습니다.", review.getGathering().getId(), reviewId);
+    }
+
+    /**
+     * 3. 전체 후기 조회
+     * 작성자: 오예령
+     *
+     * @param pageable  페이징 처리 시 필요한 항목
+     * @param query     검색어
+     * @param location  모임 장소 필터링
+     * @param startDate 시작 날짜
+     * @param endDate   끝 날짜
+     * @param category  카테고리 필터링
+     * @param sort      정렬 기준 (평점 높은 순, 평점 낮은 순)
+     * @return 요청한 범위 내에 속하는 페이징 처리된 후기 리스트 반환
+     */
+    @Override
+    public ReviewDetailPagingResponse searchReview(Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort) {
+
+        // 전체 후기의 평균 평점 및 각 평점 별 후기 개수 계산 메서드
+        ReviewScoreInfo scoreInfo = reviewRepository.getScoreStatistics(query, location, category, startDate, endDate);
+        Page<ReviewDetailInfo> reviewDetailInfoList = reviewRepository.getReviewDetailInfo(pageable, query, location, startDate, endDate, category, sort);
+
+        return new ReviewDetailPagingResponse(reviewDetailInfoList, scoreInfo);
     }
 
 
