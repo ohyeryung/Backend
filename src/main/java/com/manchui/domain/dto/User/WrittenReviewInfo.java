@@ -17,6 +17,7 @@ public class WrittenReviewInfo {
     private String category;
     private String location;
     private String gatheringImage;
+    private LocalDateTime gatheringDate;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

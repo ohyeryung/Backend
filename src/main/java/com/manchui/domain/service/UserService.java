@@ -149,7 +149,7 @@ public class UserService {
 
             return new WrittenReviewInfo(m.getGathering().getId(), m.getScore(),
                     m.getGathering().getGroupName(), m.getGathering().getCategory(),
-                    m.getGathering().getLocation(), filePath, m.getCreatedAt(), m.getUpdatedAt());
+                    m.getGathering().getLocation(), filePath, m.getGathering().getGatheringDate(), m.getCreatedAt(), m.getUpdatedAt());
         });
         //응답 데이터 반환
         return new UserWrittenReviewsResponse(writtenReviewInfos.getNumberOfElements(), writtenReviewInfos,
