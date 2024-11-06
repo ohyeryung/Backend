@@ -15,10 +15,10 @@ public interface ReviewRepository extends JpaRepository<Review, Long>, ReviewQue
 
     Optional<Review> findByGatheringAndUser(Gathering gathering, User user);
 
-    List<Review> findByGathering(Gathering gathering);
-
     Page<Review> findByUser(User user, Pageable pageable);
+
     Optional<Review> findByIdAndDeletedAtIsNull(Long reviewId);
 
     List<Review> findByUserAndDeletedAtIsNull(User user);
+
 }
