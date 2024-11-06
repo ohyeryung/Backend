@@ -5,6 +5,7 @@ import com.manchui.domain.entity.*;
 import com.manchui.domain.repository.*;
 import com.manchui.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.util.UUID;
 import static com.manchui.global.exception.ErrorCode.*;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class UserService {
 
@@ -113,15 +115,20 @@ public class UserService {
 
         //유저 모임 참여 엔티티 조회
         List<Attendance> userAttendance = attendanceRepository.findByUserAndDeletedAtIsNull(user);
-        List<Long> gatheringIdList = new ArrayList<>();
         //참여한 모임 ID 목록
+        List<Long> gatheringIdList = new ArrayList<>();
+
         for (Attendance attendance : userAttendance) {
-            Long gatheringId = attendance.getGathering().getId();
-            gatheringIdList.add(gatheringId);
+            //모임 취소 X, 사용자가 모임 생성자인 경우
+            if (!attendance.getGathering().isCanceled() && !attendance.getUser().equals(attendance.getGathering().getUser())) {
+                gatheringIdList.add(attendance.getGathering().getId());
+            }
         }
 
+        //참여한 모임 페이징 조회
         Page<Gathering> gatheringList = gatheringRepository.findByIdIn(gatheringIdList, pageable);
 
+        //GatheringInfo DTO로 변환
         Page<GatheringInfo> participatedGatheringList = gatheringList.map(m -> {
 
             String filePath = imageRepository.findByGatheringId(m.getId()).getFilePath();
