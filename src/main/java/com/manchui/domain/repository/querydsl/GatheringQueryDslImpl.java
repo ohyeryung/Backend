@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -70,6 +71,11 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
         // dueDate 체크: 이 조건은 이미 상태 업데이트 로직에서 처리됨
         queryBuilder.where(gathering.dueDate.after(LocalDateTime.now()));
 
+        // 찜한 모임의 경우, 찜한 모임만 필터링
+        if (isHeartList) {
+            queryBuilder.where(heart.user.email.eq(email)); // 찜한 모임만 조회
+        }
+
         return executePagedQuery(queryBuilder, pageable);
     }
 
@@ -88,6 +94,8 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
 
     // 공통 쿼리
     private JPAQuery<GatheringListResponse> buildBaseQuery(String email, boolean isHeartList) {
+
+        log.info("{}가 요청한 모임 목록 조회 공통 쿼리 실행 ", email);
 
         JPAQuery<GatheringListResponse> query = queryFactory
                 .select(Projections.constructor(GatheringListResponse.class,
@@ -145,7 +153,7 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
     // 필터링 적용
     private void applyFilters(JPAQuery<GatheringListResponse> queryBuilder, String query, String location, String startDate, String endDate, String category, String sort) {
 
-        if (query != null && !query.isEmpty()) {
+        if (StringUtils.hasText(query)) {
             queryBuilder.where(gathering.groupName.contains(query));
         }
 
@@ -179,10 +187,18 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
                 .limit(pageable.getPageSize())
                 .fetch();
 
+        log.info("gatheringList.size() : {}", gatheringList.size());
+
         // 카운트 쿼리
-        long total = Optional.ofNullable(queryBuilder.clone()
-                .select(gathering.count())
-                .fetchOne()).orElse(0L);
+        long total = Optional.ofNullable(
+                queryBuilder.clone()
+                        .offset(0)  // 페이지네이션 제거
+                        .limit(Long.MAX_VALUE) // 페이지 제한 제거
+                        .select(gathering.count())
+                        .fetchOne()
+        ).orElse(0L);
+
+        log.info("조회된 모임의 수 : {}", total);
 
         return new PageImpl<>(gatheringList, pageable, total);
     }
