@@ -1,5 +1,6 @@
 package com.manchui.domain.service;
 
+import com.manchui.domain.dto.CustomUserDetails;
 import com.manchui.domain.dto.UserInfo;
 import com.manchui.domain.dto.gathering.GatheringCreateRequest;
 import com.manchui.domain.dto.gathering.GatheringCreateResponse;
@@ -84,44 +85,30 @@ public class GatheringServiceImpl implements GatheringService {
     }
 
     /**
-     * 1. 모임 찾기 및 목록 조회 (비회원)
+     * 1. 모임 찾기 및 목록 조회
      * 작성자: 오예령
      *
-     * @param pageable  페이징 처리에 필요한 데이터
-     * @param query     검색 키워드
-     * @param location  위치
-     * @param startDate 시작 날짜
-     * @param endDate   끝 날짜
-     * @param category  모임 카테고리
-     * @param sort      정렬 기준
+     * @param userDetails 유저 정보 객체
+     * @param pageable    페이징 처리에 필요한 데이터
+     * @param query       검색 키워드
+     * @param location    위치
+     * @param startDate   시작 날짜
+     * @param endDate     끝 날짜
+     * @param category    모임 카테고리
+     * @param sort        정렬 기준
      * @return 요청한 범위에 대한 모임 List 반환
      */
     @Override
     @Transactional
-    public GatheringPagingResponse getGatheringByGuest(Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort) {
+    public GatheringPagingResponse getGatherings(CustomUserDetails userDetails, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort) {
 
-        return new GatheringPagingResponse(gatheringRepository.getGatheringListByGuest(pageable, query, location, startDate, endDate, category, sort));
-    }
-
-    /**
-     * 1-1. 모임 찾기 및 목록 조회 (회원)
-     * 작성자: 오예령
-     *
-     * @param email     유저 email
-     * @param pageable  페이징 처리에 필요한 데이터
-     * @param query     검색 키워드
-     * @param location  위치
-     * @param startDate 시작 날짜
-     * @param endDate   끝 날짜
-     * @param category  모임 카테고리
-     * @param sort      정렬 기준
-     * @return 요청한 범위에 대한 모임 List 반환
-     */
-    @Override
-    @Transactional
-    public GatheringPagingResponse getGatheringByUser(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort) {
-
-        return new GatheringPagingResponse(gatheringRepository.getGatheringListByUser(email, pageable, query, location, startDate, endDate, category, sort));
+        if (userDetails != null && !userDetails.isGuest()) {
+            // 회원일 경우의 로직
+            return new GatheringPagingResponse(gatheringRepository.getGatheringListByUser(userDetails.getUsername(), pageable, query, location, startDate, endDate, category, sort));
+        } else {
+            // 비회원일 경우의 로직
+            return new GatheringPagingResponse(gatheringRepository.getGatheringListByGuest(pageable, query, location, startDate, endDate, category, sort));
+        }
     }
 
     /**
@@ -153,14 +140,14 @@ public class GatheringServiceImpl implements GatheringService {
             handleExistingAttendance(existingAttendance.get());
         } else {
             gatheringStore.saveAttendance(user, gathering);
-
-            // 다시 조회하여 최신 인원 수 가져오기
-            currentAttendanceCount = attendanceRepository.countByGatheringAndDeletedAtIsNull(gathering);
-            // 모임의 개설 확정 상태값 변경 (최소 인원 충족 시 개설 확정 true)
-            if (currentAttendanceCount == gathering.getMinUsers()) gathering.open();
-
-            log.info("사용자 {}가 모임 id {}에 참여했습니다.", user.getName(), gatheringId);
         }
+        // 다시 조회하여 최신 인원 수 가져오기
+        currentAttendanceCount = attendanceRepository.countByGatheringAndDeletedAtIsNull(gathering);
+
+        // 모임의 개설 확정 상태값 변경 (최소 인원 충족 시 개설 확정 true)
+        if (currentAttendanceCount == gathering.getMinUsers()) gathering.open();
+
+        log.info("사용자 {}가 모임 id {}에 참여했습니다.", user.getName(), gatheringId);
     }
 
     /**
@@ -241,7 +228,7 @@ public class GatheringServiceImpl implements GatheringService {
             throw new CustomException(HEART_NOT_EXIST);
         }
 
-        // 좋아요 취소 로직 (필요한 경우 추가)
+        // 좋아요 취소 로직
         heartRepository.delete(heartOptional.get());
     }
 

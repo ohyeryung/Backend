@@ -28,7 +28,7 @@ public class ReviewDetailPagingResponse {
         this.scoreList = scoreInfo;
         this.reviewContentList = pageList.getContent();
         this.pageSize = pageList.getSize();
-        this.page = pageList.getPageable().getPageNumber();
+        this.page = pageList.getPageable().getPageNumber() + 1;
         this.totalPage = pageList.getTotalPages();
     }
 

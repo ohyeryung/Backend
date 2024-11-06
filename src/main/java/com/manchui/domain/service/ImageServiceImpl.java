@@ -18,20 +18,21 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ImageServiceImpl {
 
-    private final ImageRepository imageRepository;
-    private final S3Uploader s3Uploader;
-
     private static final Set<String> VALID_EXTENSIONS = new HashSet<>(Arrays.asList("gif", "png", "jpg", "jpeg",
             "GIF", "PNG", "JPG", "JPEG"));
+    private final ImageRepository imageRepository;
+    private final S3Uploader s3Uploader;
 
     // 모임의 Image 등록
     @Transactional
     public void uploadGatheringImage(MultipartFile multipartFile, Long gatheringId) {
+
         imageRepository.save(toImageEntity(multipartFile, gatheringId));
 
     }
 
     public Long uploadUserProfileImage(MultipartFile multipartFile) {
+
         return imageRepository.save(toImageEntity(multipartFile, null)).getImageId();
     }
 
@@ -39,17 +40,17 @@ public class ImageServiceImpl {
     // MultipartFile 을 Image Entity 형태로 변경
     public Image toImageEntity(MultipartFile multipartFile, Long gatheringId) {
 
-        if(multipartFile.isEmpty()) throw new CustomException(ErrorCode.ILLEGAL_EMPTY_FILE);
+        if (multipartFile.isEmpty()) throw new CustomException(ErrorCode.ILLEGAL_EMPTY_FILE);
 
         String fakeFileName = createRandomFileName(multipartFile.getOriginalFilename());
         String originalFileName = multipartFile.getOriginalFilename();
         String filePath = s3Uploader.uploadImage(multipartFile, fakeFileName);
 
-        if(gatheringId == null){
+        if (gatheringId == null) {
             return new Image(originalFileName, fakeFileName, filePath);
         }
 
-        return new Image(originalFileName, fakeFileName,  filePath, gatheringId);
+        return new Image(originalFileName, fakeFileName, filePath, gatheringId);
 
     }
 
@@ -75,9 +76,9 @@ public class ImageServiceImpl {
                 throw new CustomException(ErrorCode.WRONG_TYPE_IMAGE);
             }
             return "." + extension;
-        }
-        catch (IndexOutOfBoundsException e) {
+        } catch (IndexOutOfBoundsException e) {
             throw new CustomException(ErrorCode.WRONG_TYPE_IMAGE);
         }
     }
+
 }

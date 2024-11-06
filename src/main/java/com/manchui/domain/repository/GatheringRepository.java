@@ -14,4 +14,5 @@ public interface GatheringRepository extends JpaRepository<Gathering, Long>, Gat
     Page<Gathering> findByUserEquals(User user, Pageable pageable);
 
     Page<Gathering> findByIdIn(List<Long> gatheringIdList, Pageable pageable);
+
 }
