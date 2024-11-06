@@ -46,49 +46,28 @@ public class GatheringController {
 
     }
 
-    @Operation(summary = "모임 목록 조회 (비회원)", description = "비회원이 요청하는 모임의 목록을 반환합니다.")
+    @Operation(summary = "모임 목록 조회", description = "회원 또는 비회원이 요청하는 모임의 목록을 반환합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "비회원이 요청한 목록이 반환되었습니다.",
+            @ApiResponse(responseCode = "200", description = "요청한 목록이 반환되었습니다.",
                     content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "400", description = "요청 값을 확인해주세요."),
             @ApiResponse(responseCode = "404", description = "해당하는 모임이 없습니다.")
     })
     @GetMapping("/public")
-    public ResponseEntity<SuccessResponse<GatheringPagingResponse>> getGatheringByGuest(@RequestParam(defaultValue = "1") int page,
-                                                                                        @RequestParam int size,
-                                                                                        @RequestParam(required = false) String query,
-                                                                                        @RequestParam(required = false) String location,
-                                                                                        @RequestParam(required = false) String startDate,
-                                                                                        @RequestParam(required = false) String endDate,
-                                                                                        @RequestParam(required = false) String category,
-                                                                                        @RequestParam(required = false) String sort) {
+    public ResponseEntity<SuccessResponse<GatheringPagingResponse>> getGatherings(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                                  @RequestParam(defaultValue = "1") int page,
+                                                                                  @RequestParam int size,
+                                                                                  @RequestParam(required = false) String query,
+                                                                                  @RequestParam(required = false) String location,
+                                                                                  @RequestParam(required = false) String startDate,
+                                                                                  @RequestParam(required = false) String endDate,
+                                                                                  @RequestParam(required = false) String category,
+                                                                                  @RequestParam(required = false) String sort) {
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
-        return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getGatheringByGuest(pageable, query, location, startDate, endDate, category, sort)));
+        GatheringPagingResponse response = gatheringService.getGatherings(userDetails, pageable, query, location, startDate, endDate, category, sort);
 
-    }
-
-    @Operation(summary = "모임 목록 조회 (회원)", description = "회원이 요청하는 모임의 목록을 반환합니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "회원이 요청한 목록이 반환되었습니다.",
-                    content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "400", description = "요청 값을 확인해주세요."),
-            @ApiResponse(responseCode = "404", description = "해당하는 모임이 없습니다.")
-    })
-    @GetMapping("")
-    public ResponseEntity<SuccessResponse<GatheringPagingResponse>> getGatheringByUser(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                                                       @RequestParam(defaultValue = "1") int page,
-                                                                                       @RequestParam int size,
-                                                                                       @RequestParam(required = false) String query,
-                                                                                       @RequestParam(required = false) String location,
-                                                                                       @RequestParam(required = false) String startDate,
-                                                                                       @RequestParam(required = false) String endDate,
-                                                                                       @RequestParam(required = false) String category,
-                                                                                       @RequestParam(required = false) String sort) {
-
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
-        return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getGatheringByUser(userDetails.getUsername(), pageable, query, location, startDate, endDate, category, sort)));
-
+        return ResponseEntity.ok(SuccessResponse.successWithData(response));
     }
 
     @Operation(summary = "모임 참여", description = "모임에 참여합니다.")

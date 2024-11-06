@@ -1,5 +1,6 @@
 package com.manchui.domain.service;
 
+import com.manchui.domain.dto.CustomUserDetails;
 import com.manchui.domain.dto.gathering.GatheringCreateRequest;
 import com.manchui.domain.dto.gathering.GatheringCreateResponse;
 import com.manchui.domain.dto.gathering.GatheringInfoResponse;
@@ -12,9 +13,7 @@ public interface GatheringService {
 
     GatheringCreateResponse createGathering(String email, GatheringCreateRequest createRequest);
 
-    GatheringPagingResponse getGatheringByGuest(Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort);
-
-    GatheringPagingResponse getGatheringByUser(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort);
+    GatheringPagingResponse getGatherings(CustomUserDetails userDetails, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort);
 
     void joinGathering(String email, Long gatheringId);
 
