@@ -28,6 +28,11 @@ public class JoinService {
 
         checkName(new NameDTO(name));
 
+        //이메일 중복 검증
+        if (isValidEmail(email)) {
+            throw new CustomException(ErrorCode.ILLEGAL_EMAIL_DUPLICATION);
+        }
+
         if(!isValidPassword(password)){
             throw new CustomException(ErrorCode.INVALID_PASSWORD_FORMAT);
         }
@@ -40,6 +45,10 @@ public class JoinService {
         User user = new User(name, email, encodedPassword);
 
         userRepository.save(user);
+    }
+
+    private boolean isValidEmail(String email) {
+        return userRepository.existsByEmail(email);
     }
 
     private boolean isValidPassword(String password) {
