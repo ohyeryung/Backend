@@ -35,26 +35,37 @@ public class JWTFilter extends OncePerRequestFilter {
         String requestUri = request.getRequestURI();
         String requestMethod = request.getMethod();
 
-        //해당 URI, method일 경우 다음 필터로
+        // 인증이 필요 없는 요청 처리
         if ((requestUri.matches("^\\/api\\/auths\\/signup$") && requestMethod.equals("POST")) ||
                 (requestUri.matches("^\\/api\\/auths\\/check-name$") && requestMethod.equals("POST")) ||
                 (requestUri.matches("^\\/api\\/auths\\/signin$") && requestMethod.equals("POST")) ||
-                (requestUri.matches("^\\/api\\/gatherings\\/public.*$") && requestMethod.equals("GET")) ||
-                (requestUri.matches("^\\/api\\/reviews$")) && requestMethod.equals("GET")
-        ) {
+                (requestUri.matches("^\\/api\\/reviews$") && requestMethod.equals("GET"))) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String accessToken = null;
+        // 인증이 필요한 요청 처리
+        String accessToken;
+        String authorization = request.getHeader("Authorization");
+
+        // /api/gatherings/public/** 요청에 대한 처리
+        if (requestUri.matches("^/api/gatherings/public.*$") && requestMethod.equals("GET"))
+
+            log.info("모임 전체 목록 조회 요청");
+        // 토큰이 없는 경우 비회원으로 처리
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         try {
             accessToken = validateAccessToken(request, response, filterChain);
         } catch (Exception e) {
             return;
         }
 
+        // 사용자 이메일 추출 및 인증 처리
         String userEmail = jwtUtil.getUsername(accessToken);
-
         User user = new User(userEmail);
         CustomUserDetails customUserDetails = new CustomUserDetails(user);
 
