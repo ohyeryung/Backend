@@ -65,11 +65,6 @@ public class Gathering extends Timestamped {
     @Comment("모집 최소 인원")
     private int minUsers = 2;
 
-    @Column(name = "is_hearted")
-    @Comment("좋아요 여부")
-    @Builder.Default
-    private boolean isHearted = false;
-
     @Column(name = "is_opened")
     @Comment("개설여부")
     @Builder.Default

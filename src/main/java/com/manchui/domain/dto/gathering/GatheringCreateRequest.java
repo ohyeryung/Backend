@@ -54,7 +54,6 @@ public class GatheringCreateRequest {
                 .maxUsers(maxUsers)
                 .minUsers(minUsers)
                 .gatheringContent(gatheringContent)
-                .isHearted(false)
                 .isOpened(false)
                 .isCanceled(false)
                 .isClosed(false)
