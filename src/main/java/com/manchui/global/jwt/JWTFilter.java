@@ -49,13 +49,18 @@ public class JWTFilter extends OncePerRequestFilter {
         String authorization = request.getHeader("Authorization");
 
         // /api/gatherings/public/** 요청에 대한 처리
-        if (requestUri.matches("^/api/gatherings/public.*$") && requestMethod.equals("GET"))
-
+        if (requestUri.matches("^/api/gatherings/public.*$") && requestMethod.equals("GET")) {
             log.info("모임 전체 목록 조회 요청");
-        // 토큰이 없는 경우 비회원으로 처리
-        if (authorization == null || !authorization.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
+            // 토큰이 없는 경우 비회원으로 처리
+            if (authorization == null || !authorization.startsWith("Bearer ")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+        } else {
+            if (authorization == null || !authorization.startsWith("Bearer ")) {
+                handleException(response, ErrorCode.MISSING_AUTHORIZATION_ACCESS_TOKEN);
+                return;
+            }
         }
 
         try {
