@@ -56,11 +56,6 @@ public class JWTFilter extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);
                 return;
             }
-        } else {
-            if (authorization == null || !authorization.startsWith("Bearer ")) {
-                handleException(response, ErrorCode.MISSING_AUTHORIZATION_ACCESS_TOKEN);
-                return;
-            }
         }
 
         try {
