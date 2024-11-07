@@ -5,6 +5,7 @@ import com.manchui.domain.repository.ImageRepository;
 import com.manchui.global.exception.CustomException;
 import com.manchui.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,6 +15,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ImageServiceImpl {
@@ -25,8 +27,15 @@ public class ImageServiceImpl {
 
     // 모임의 Image 등록
     @Transactional
-    public void uploadGatheringImage(MultipartFile multipartFile, Long gatheringId) {
+    public void uploadGatheringImage(MultipartFile multipartFile, Long gatheringId, boolean isDuplicate) {
 
+        if (isDuplicate) {
+            Image foundImage = imageRepository.findByGatheringId(gatheringId);
+            log.info("기존 이미지 이름 :  {}", foundImage.getOriginalFileName());
+
+            s3Uploader.deleteImage(foundImage.getFakeFileName());
+            imageRepository.delete(foundImage);
+        }
         imageRepository.save(toImageEntity(multipartFile, gatheringId));
 
     }
