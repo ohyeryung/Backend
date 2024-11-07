@@ -3,6 +3,7 @@ package com.manchui.domain.service;
 import com.manchui.domain.dto.UserInfo;
 import com.manchui.domain.entity.Attendance;
 import com.manchui.domain.entity.Gathering;
+import com.manchui.domain.entity.User;
 import com.manchui.domain.repository.AttendanceRepository;
 import com.manchui.domain.repository.GatheringRepository;
 import com.manchui.global.exception.CustomException;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.manchui.global.exception.ErrorCode.*;
 
@@ -22,6 +24,12 @@ public class GatheringReaderImpl implements GatheringReader {
     private final GatheringRepository gatheringRepository;
 
     private final AttendanceRepository attendanceRepository;
+
+    @Override
+    public Optional<Gathering> findGathering(User user, String groupName) {
+
+        return gatheringRepository.findByUserAndGroupName(user, groupName);
+    }
 
     @Override
     public Gathering checkGathering(Long gatheringId) {
@@ -50,7 +58,7 @@ public class GatheringReaderImpl implements GatheringReader {
 
         Gathering gathering = checkGathering(gatheringId);
 
-        // 모임이 마감되지 않았거나 취소된 경우 예외 발생
+        // 모임이 마감되지 않았거나 취소된 모임인 경우, 모임 일자가 현재 시점으로부터 지나지 않은 경우 예외 발생
         if (!gathering.isClosed() || gathering.isCanceled() || !gathering.getGatheringDate().isBefore(LocalDateTime.now()))
             throw new CustomException(ILLEGAL_GATHERING_STATUS);
 

@@ -72,16 +72,47 @@ public class GatheringServiceImpl implements GatheringService {
         LocalDateTime dueDate = gatheringDateUtils.calculateDueDateFromGatheringDate(gatheringDate);
         gatheringDateUtils.checkGatheringDates(gatheringDate, dueDate);
 
-        // 2. 모임 및 이미지 객체 저장
-        Gathering gathering = gatheringStore.saveGathering(createRequest, user, gatheringDate, dueDate);
-        imageService.uploadGatheringImage(createRequest.getGatheringImage(), gathering.getId());
+        Optional<Gathering> findGatheringOpt = gatheringReader.findGathering(user, createRequest.getGroupName());
 
-        // 3. 주최자를 모임에 자동으로 참여시킴
-        attendanceRepository.save(Attendance.builder().user(user).gathering(gathering).build());
-        log.info("주최자 {}가 모임 id {}에 자동으로 참여 되었습니다.", user.getName(), gathering.getId());
+        // 모임 재생성 로직
+        if (findGatheringOpt.isPresent()) {
+            Gathering gathering = findGatheringOpt.get();
 
-        Image image = imageRepository.findByGatheringId(gathering.getId());
-        return gathering.toResponseDto(image.getFilePath());
+            // 마감되지 않은 중복된 이름의 모임이 존재한다면 예외 반환
+            if (!gathering.isClosed()) throw new CustomException(ALREADY_USED_GROUP_NAME);
+
+            log.info("기존에 만들었던 모임의 이름 : {}", gathering.getGroupName());
+
+            // 이미지 업로드
+            imageService.uploadGatheringImage(createRequest.getGatheringImage(), gathering.getId(), true);
+
+            gathering.reopen(gatheringDate, dueDate, createRequest.getLocation(), createRequest.getMaxUsers(), createRequest.getMinUsers(), createRequest.getGatheringContent());
+            gathering.updateTime();
+
+            // 기존 참여자 및 좋아요 삭제
+            attendanceRepository.findByGathering(gathering).forEach(attendance -> {
+                if (!attendance.getUser().equals(user)) {
+                    attendance.softDelete();
+                }
+            });
+            heartRepository.deleteAll(heartRepository.findByGathering(gathering));
+
+            log.info("모임 재생성: 주최자 {}가 모임 id{}의 '{}'을 다시 모집 중으로 변경했습니다.", user.getName(), gathering.getId(), gathering.getGroupName());
+            Image image = imageRepository.findByGatheringId(gathering.getId());
+            return gathering.toResponseDto(image.getFilePath());
+
+        } else {
+            // 2. 모임 및 이미지 객체 저장
+            Gathering gathering = gatheringStore.saveGathering(createRequest, user, gatheringDate, dueDate);
+            imageService.uploadGatheringImage(createRequest.getGatheringImage(), gathering.getId(), false);
+
+            // 3. 주최자를 모임에 자동으로 참여시킴
+            attendanceRepository.save(Attendance.builder().user(user).gathering(gathering).build());
+            log.info("새 모임 생성: 주최자 {}가 모임 id{}의 '{}'에 자동으로 참여되었습니다.", user.getName(), gathering.getId(), gathering.getGroupName());
+
+            Image image = imageRepository.findByGatheringId(gathering.getId());
+            return gathering.toResponseDto(image.getFilePath());
+        }
     }
 
     /**
@@ -340,6 +371,5 @@ public class GatheringServiceImpl implements GatheringService {
 
         return new ReviewDetailPagingResponse(pageList, scoreInfo);
     }
-
 
 }
