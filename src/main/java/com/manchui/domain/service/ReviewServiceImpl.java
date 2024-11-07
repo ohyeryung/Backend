@@ -45,7 +45,7 @@ public class ReviewServiceImpl implements ReviewService {
         // 유저 검증
         User user = userService.checkUser(email);
 
-        // 마감된 모임만 후기 등록이 가능, 후기 유효성 검증 및 마감된 상태 체크
+        // 마감된 모임이면서 모임 일자가 현재 시점으로부터 지난 모임만 후기 등록이 가능, 후기 유효성 검증 및 마감된 상태 체크
         Gathering gathering = gatheringReader.checkGatheringStatusIsClosed(gatheringId);
 
         // 유저가 해당 모임에 참석했는지 확인

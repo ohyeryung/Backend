@@ -9,6 +9,7 @@ import com.manchui.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,7 +51,8 @@ public class GatheringReaderImpl implements GatheringReader {
         Gathering gathering = checkGathering(gatheringId);
 
         // 모임이 마감되지 않았거나 취소된 경우 예외 발생
-        if (!gathering.isClosed() || gathering.isCanceled()) throw new CustomException(ILLEGAL_GATHERING_STATUS);
+        if (!gathering.isClosed() || gathering.isCanceled() || !gathering.getGatheringDate().isBefore(LocalDateTime.now()))
+            throw new CustomException(ILLEGAL_GATHERING_STATUS);
 
         return gathering;
     }
