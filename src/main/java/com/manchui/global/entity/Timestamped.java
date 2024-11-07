@@ -52,4 +52,10 @@ public abstract class Timestamped {
         this.deletedAt = null;
     }
 
+    public void updateTime() {
+
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
 }

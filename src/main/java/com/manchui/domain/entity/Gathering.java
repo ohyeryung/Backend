@@ -124,4 +124,17 @@ public class Gathering extends Timestamped {
         this.isOpened = false;
     }
 
+    public void reopen(LocalDateTime gatheringDate, LocalDateTime dueDate, String location, int maxUsers, int minUsers, String gatheringContent) {
+
+        this.isOpened = false;
+        this.isClosed = false;
+        this.gatheringDate = gatheringDate;
+        this.dueDate = dueDate;
+        this.location = location;
+        this.maxUsers = maxUsers;
+        this.minUsers = minUsers;
+        this.gatheringContent = gatheringContent;
+
+    }
+
 }
