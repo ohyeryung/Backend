@@ -22,6 +22,7 @@ public enum ErrorCode {
     INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 Access 토큰입니다."),
 
     // gathering
+    ALREADY_USED_GROUP_NAME(HttpStatus.BAD_REQUEST, "기존에 등록된 이름의 모임이 존재합니다."),
     ILLEGAL_MIN_USERS(HttpStatus.BAD_REQUEST, "최소 인원은 최대 인원보다 클 수 없습니다."),
     ILLEGAL_DUE_DATE(HttpStatus.BAD_REQUEST, "마감 기한은 최소 하루 이상이어야 합니다."),
     ILLEGAL_GATHERING_DATE(HttpStatus.BAD_REQUEST, "모임 날짜는 현재 시점으로부터 최소 24시간 이후여야 합니다."),
