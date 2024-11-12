@@ -78,7 +78,10 @@ public class UserService {
     }
 
     //유저 이름 중복 확인
-    public void checkName(String name) {
+    public void checkName(String name, String userEmail) {
+        if (userRepository.findByEmail(userEmail).getName().equals(name)) {
+            return;
+        }
         if (userRepository.existsByName(name)) {
             throw new CustomException(ILLEGAL_USERNAME_DUPLICATION);
         }
