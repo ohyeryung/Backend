@@ -16,6 +16,7 @@ public class WrittenReviewInfo {
     private String groupName;
     private String category;
     private String location;
+    private String comment;
     private String gatheringImage;
     private LocalDateTime gatheringDate;
     private LocalDateTime createdAt;
