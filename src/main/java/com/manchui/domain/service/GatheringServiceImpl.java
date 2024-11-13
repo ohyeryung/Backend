@@ -131,14 +131,14 @@ public class GatheringServiceImpl implements GatheringService {
      */
     @Override
     @Transactional
-    public GatheringPagingResponse getGatherings(CustomUserDetails userDetails, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort) {
+    public GatheringPagingResponse getGatherings(CustomUserDetails userDetails, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort, boolean available) {
 
         if (userDetails != null && !userDetails.isGuest()) {
             // 회원일 경우의 로직
-            return new GatheringPagingResponse(gatheringRepository.getGatheringListByUser(userDetails.getUsername(), pageable, query, location, startDate, endDate, category, sort));
+            return new GatheringPagingResponse(gatheringRepository.getGatheringListByUser(userDetails.getUsername(), pageable, query, location, startDate, endDate, category, sort, available));
         } else {
             // 비회원일 경우의 로직
-            return new GatheringPagingResponse(gatheringRepository.getGatheringListByGuest(pageable, query, location, startDate, endDate, category, sort));
+            return new GatheringPagingResponse(gatheringRepository.getGatheringListByGuest(pageable, query, location, startDate, endDate, category, sort, available));
         }
     }
 
@@ -327,9 +327,9 @@ public class GatheringServiceImpl implements GatheringService {
      */
     @Override
     @Transactional
-    public GatheringPagingResponse getHeartList(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort) {
+    public GatheringPagingResponse getHeartList(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort, boolean available) {
 
-        return new GatheringPagingResponse(gatheringRepository.getHeartList(email, pageable, query, location, startDate, endDate, category, sort));
+        return new GatheringPagingResponse(gatheringRepository.getHeartList(email, pageable, query, location, startDate, endDate, category, sort, available));
     }
 
     // 참여 여부 판단

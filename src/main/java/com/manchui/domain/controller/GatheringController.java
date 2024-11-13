@@ -62,10 +62,11 @@ public class GatheringController {
                                                                                   @RequestParam(required = false) String startDate,
                                                                                   @RequestParam(required = false) String endDate,
                                                                                   @RequestParam(required = false) String category,
-                                                                                  @RequestParam(required = false) String sort) {
+                                                                                  @RequestParam(required = false) String sort,
+                                                                                  @RequestParam(required = false) boolean available) {
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
-        GatheringPagingResponse response = gatheringService.getGatherings(userDetails, pageable, query, location, startDate, endDate, category, sort);
+        GatheringPagingResponse response = gatheringService.getGatherings(userDetails, pageable, query, location, startDate, endDate, category, sort, available);
 
         return ResponseEntity.ok(SuccessResponse.successWithData(response));
     }
@@ -182,10 +183,11 @@ public class GatheringController {
                                                                                  @RequestParam(required = false) String startDate,
                                                                                  @RequestParam(required = false) String endDate,
                                                                                  @RequestParam(required = false) String category,
-                                                                                 @RequestParam(required = false) String sort) {
+                                                                                 @RequestParam(required = false) String sort,
+                                                                                 @RequestParam(required = false) boolean available) {
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
-        return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getHeartList(userDetails.getUsername(), pageable, query, location, startDate, endDate, category, sort)));
+        return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getHeartList(userDetails.getUsername(), pageable, query, location, startDate, endDate, category, sort, available)));
     }
 
 }

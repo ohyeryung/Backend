@@ -36,36 +36,36 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
 
     // 비회원 모임 목록 조회
     @Override
-    public Page<GatheringListResponse> getGatheringListByGuest(Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort) {
+    public Page<GatheringListResponse> getGatheringListByGuest(Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort, boolean available) {
 
-        return getGatheringList(null, pageable, query, location, startDate, endDate, category, sort);
+        return getGatheringList(null, pageable, query, location, startDate, endDate, category, sort, available);
     }
 
     // 회원 모임 목록 조회
     @Override
-    public Page<GatheringListResponse> getGatheringListByUser(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort) {
+    public Page<GatheringListResponse> getGatheringListByUser(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort, boolean available) {
 
-        return getGatheringList(email, pageable, query, location, startDate, endDate, category, sort);
+        return getGatheringList(email, pageable, query, location, startDate, endDate, category, sort, available);
     }
 
     // 찜한 모임 목록 조회
     @Override
-    public Page<GatheringListResponse> getHeartList(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort) {
+    public Page<GatheringListResponse> getHeartList(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort, boolean available) {
 
-        return getGatheringList(email, pageable, query, location, startDate, endDate, category, sort, true);
+        return getGatheringList(email, pageable, query, location, startDate, endDate, category, sort, true, available);
     }
 
     // 공통 모임 목록 조회 로직
-    private Page<GatheringListResponse> getGatheringList(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort) {
+    private Page<GatheringListResponse> getGatheringList(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort, boolean available) {
 
-        return getGatheringList(email, pageable, query, location, startDate, endDate, category, sort, false);
+        return getGatheringList(email, pageable, query, location, startDate, endDate, category, sort, false, available);
     }
 
     // Gathering 목록 쿼리를 수행하고 필터를 적용하는 메서드
-    private Page<GatheringListResponse> getGatheringList(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort, boolean isHeartList) {
+    private Page<GatheringListResponse> getGatheringList(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort, boolean isHeartList, boolean available) {
 
         updateIsClosedStatus(); // 상태 업데이트
-        JPAQuery<GatheringListResponse> queryBuilder = buildBaseQuery(email, isHeartList);
+        JPAQuery<GatheringListResponse> queryBuilder = buildBaseQuery(email, isHeartList, available);
         applyFilters(queryBuilder, query, location, startDate, endDate, category, sort);
 
         // dueDate 체크: 이 조건은 이미 상태 업데이트 로직에서 처리됨
@@ -93,7 +93,7 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
     }
 
     // 공통 쿼리
-    private JPAQuery<GatheringListResponse> buildBaseQuery(String email, boolean isHeartList) {
+    private JPAQuery<GatheringListResponse> buildBaseQuery(String email, boolean isHeartList, boolean available) {
 
         log.info("{}가 요청한 모임 목록 조회 공통 쿼리 실행 ", email);
 
@@ -147,6 +147,16 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
                     .and(heart.user.email.eq(email)));
         }
 
+        // 참여 가능한 모임만 조회
+        if (available) {
+            query.where(gathering.maxUsers.gt(
+                    select(attendance.count())
+                            .from(attendance)
+                            .where(attendance.gathering.id.eq(gathering.id)
+                                    .and(attendance.deletedAt.isNull()))
+            ));
+        }
+
         return query;
     }
 
@@ -157,7 +167,7 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
             queryBuilder.where(gathering.groupName.contains(query));
         }
 
-        if (location != null && !location.isEmpty()) {
+        if (StringUtils.hasText(location)) {
             queryBuilder.where(gathering.location.contains(location));
         }
 
@@ -167,8 +177,8 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
             queryBuilder.where(gathering.gatheringDate.between(start.atStartOfDay(), end.atTime(23, 59, 59)));
         }
 
-        if (category != null && !category.isEmpty()) {
-            queryBuilder.where(gathering.category.eq(category));
+        if (StringUtils.hasText(category)) {
+            queryBuilder.where(gathering.category.contains(category));
         }
 
         // 정렬 조건 적용
@@ -186,8 +196,6 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
-
-        log.info("gatheringList.size() : {}", gatheringList.size());
 
         // 카운트 쿼리
         long total = Optional.ofNullable(
