@@ -22,6 +22,7 @@ import static com.manchui.domain.entity.QGathering.gathering;
 import static com.manchui.domain.entity.QHeart.heart;
 import static com.manchui.domain.entity.QImage.image;
 import static com.manchui.domain.entity.QUser.user;
+import static com.querydsl.jpa.JPAExpressions.select;
 
 @Slf4j
 public class GatheringCursorQueryDslImpl implements GatheringCursorQueryDsl {
@@ -122,6 +123,12 @@ public class GatheringCursorQueryDslImpl implements GatheringCursorQueryDsl {
                                 .where(attendance.gathering.id.eq(gathering.id)
                                         .and(attendance.deletedAt.isNull())),
                         "currentUsers"
+                ),
+                Expressions.as(
+                        select(heart.count())
+                                .from(heart)
+                                .where(heart.gathering.id.eq(gathering.id)),
+                        "heartCounts"
                 ),
                 gathering.isOpened,
                 gathering.isClosed,

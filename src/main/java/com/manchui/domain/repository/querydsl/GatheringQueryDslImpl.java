@@ -137,6 +137,12 @@ public class GatheringQueryDslImpl implements GatheringQueryDsl {
                                                 .and(attendance.deletedAt.isNull())),
                                 "currentUsers"
                         ),
+                        Expressions.as(
+                                select(heart.count())
+                                        .from(heart)
+                                        .where(heart.gathering.id.eq(gathering.id)),
+                                "heartCounts"
+                        ),
                         gathering.isOpened,
                         gathering.isClosed,
                         gathering.createdAt,
