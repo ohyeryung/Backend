@@ -39,7 +39,10 @@ public class JWTFilter extends OncePerRequestFilter {
         if ((requestUri.matches("^\\/api\\/auths\\/signup$") && requestMethod.equals("POST")) ||
                 (requestUri.matches("^\\/api\\/auths\\/check-name$") && requestMethod.equals("POST")) ||
                 (requestUri.matches("^\\/api\\/auths\\/signin$") && requestMethod.equals("POST")) ||
-                (requestUri.matches("^\\/api\\/reviews$") && requestMethod.equals("GET"))) {
+                (requestUri.matches("^\\/api\\/reviews$") && requestMethod.equals("GET")) ||
+                (requestUri.matches("^/swagger-ui(/.*)?$")) ||
+                (requestUri.matches("^/swagger-ui.html$")) ||
+                (requestUri.matches("^/v3/api-docs(?:/.*)?$"))) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -50,7 +53,6 @@ public class JWTFilter extends OncePerRequestFilter {
 
         // /api/gatherings/public/** 요청에 대한 처리
         if (requestUri.matches("^/api/gatherings/public.*$") && requestMethod.equals("GET")) {
-            log.info("모임 전체 목록 조회 요청");
             // 토큰이 없는 경우 비회원으로 처리
             if (authorization == null || !authorization.startsWith("Bearer ")) {
                 filterChain.doFilter(request, response);
