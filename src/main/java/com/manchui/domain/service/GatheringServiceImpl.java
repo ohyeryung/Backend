@@ -363,9 +363,13 @@ public class GatheringServiceImpl implements GatheringService {
         int currentUsers = userInfoList.size();
         log.info("현재 모임 id {}의 참여자 수: {}", gatheringId, currentUsers);
 
+        List<Heart> byGathering = heartRepository.findByGathering(gathering);
+
+        int heartCounts = byGathering.size();
+
         boolean isHearted = isUser && heartRepository.findByUserAndGathering(user, gathering).isPresent();
 
-        return new GatheringInfoResponse(gathering, image.getFilePath(), currentUsers, isHearted, userInfoList, reviewsList);
+        return new GatheringInfoResponse(gathering, image.getFilePath(), currentUsers, heartCounts, isHearted, userInfoList, reviewsList);
     }
 
     // 상세 조회 후기 관련 응답 객체 생성
