@@ -24,7 +24,7 @@ public class Review extends Timestamped {
     @Comment("후기 평점")
     private int score;
 
-    @Column(name = "comment", nullable = false)
+    @Column(name = "comment", nullable = false, length = 100)
     @Comment("후기 내용")
     private String comment;
 

@@ -13,7 +13,7 @@ public interface GatheringService {
 
     GatheringCreateResponse createGathering(String email, GatheringCreateRequest createRequest);
 
-    GatheringPagingResponse getGatherings(CustomUserDetails userDetails, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort);
+    GatheringPagingResponse getGatherings(CustomUserDetails userDetails, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort, boolean available);
 
     void joinGathering(String email, Long gatheringId);
 
@@ -29,6 +29,6 @@ public interface GatheringService {
 
     void cancelGathering(String email, Long gatheringId);
 
-    GatheringPagingResponse getHeartList(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort);
+    GatheringPagingResponse getHeartList(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort, boolean available);
 
 }
