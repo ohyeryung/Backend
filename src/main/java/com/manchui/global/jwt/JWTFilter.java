@@ -39,7 +39,8 @@ public class JWTFilter extends OncePerRequestFilter {
         if ((requestUri.matches("^\\/api\\/auths\\/signup$") && requestMethod.equals("POST")) ||
                 (requestUri.matches("^\\/api\\/auths\\/check-name$") && requestMethod.equals("POST")) ||
                 (requestUri.matches("^\\/api\\/auths\\/signin$") && requestMethod.equals("POST")) ||
-                (requestUri.matches("^\\/api\\/reviews$") && requestMethod.equals("GET"))) {
+                (requestUri.matches("^\\/api\\/reviews$") && requestMethod.equals("GET")) ||
+                (requestUri.matches("^\\/api\\/auths\\/reissue$") && requestMethod.equals("POST"))) {
             filterChain.doFilter(request, response);
             return;
         }

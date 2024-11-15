@@ -10,6 +10,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -65,23 +67,24 @@ public class ReissueService {
         String newRefresh = jwtUtil.createJwt("refresh", userEmail, refreshTokenExpiration);
 
         redisRefreshTokenService.deleteRefreshToken(userEmail);
+        redisRefreshTokenService.saveAccessToken(userEmail, newAccess, accessTokenExpiration);
         redisRefreshTokenService.saveRefreshToken(userEmail, newRefresh, refreshTokenExpiration);
 
         response.setHeader("Authorization", "Bearer " + newAccess);
-        response.addCookie(createCookie("refresh", newRefresh));
+        setResponseCookie(response, "refresh", refresh);
 
         return ResponseEntity.ok().body(SuccessResponse.successWithNoData("refresh 토큰 재발급 성공"));
     }
 
-    private Cookie createCookie(String key, String value) {
-
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(24 * 60 * 60);
-        //cookie.setSecure(true);
-        //cookie.setPath("/");
-        cookie.setHttpOnly(true);
-
-        return cookie;
+    private void setResponseCookie(HttpServletResponse response, String key, String value) {
+        ResponseCookie cookie = ResponseCookie.from(key, value)
+                .maxAge(24 * 60 * 60)
+                .sameSite("None")
+                .secure(true)
+                .httpOnly(true)
+                .path("/")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
 }
