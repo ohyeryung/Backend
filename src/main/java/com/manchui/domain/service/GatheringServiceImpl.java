@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -58,6 +59,12 @@ public class GatheringServiceImpl implements GatheringService {
     @Override
     @Transactional
     public GatheringCreateResponse createGathering(String email, GatheringCreateRequest createRequest) {
+
+        log.info("모임 내용 길이 : {}", createRequest.getGatheringContent().getBytes(StandardCharsets.UTF_8).length);
+
+        if (createRequest.getGatheringContent().getBytes(StandardCharsets.UTF_8).length > 1000) {
+            throw new IllegalArgumentException("내용이 DB 제한을 초과합니다.");
+        }
 
         // 0. 유저 검증
         User user = userService.checkUser(email);
