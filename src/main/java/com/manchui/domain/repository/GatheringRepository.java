@@ -19,4 +19,6 @@ public interface GatheringRepository extends JpaRepository<Gathering, Long>, Gat
 
     Page<Gathering> findByIdIn(List<Long> gatheringIdList, Pageable pageable);
 
+    List<Gathering> findByUserAndIsClosedAndIsCanceled(User user, boolean isClosed, boolean isCanceled);
+
 }
