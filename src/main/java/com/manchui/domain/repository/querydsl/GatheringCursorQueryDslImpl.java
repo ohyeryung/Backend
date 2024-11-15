@@ -96,8 +96,9 @@ public class GatheringCursorQueryDslImpl implements GatheringCursorQueryDsl {
         return new GatheringCursorPagingResponse(gatheringList, (int) gatheringCount);
     }
 
-
     private ConstructorExpression<GatheringListResponse> buildGatheringListProjection(String email) {
+
+        log.info("사용자 email : {}", email);
 
         return Projections.constructor(
                 GatheringListResponse.class,
@@ -140,7 +141,11 @@ public class GatheringCursorQueryDslImpl implements GatheringCursorQueryDsl {
                                 .from(heart)
                                 .where(
                                         heart.gathering.id.eq(gathering.id)
-                                                .and(email != null ? heart.user.email.eq(email) : null)
+                                                .and(
+                                                        email != null
+                                                                ? heart.user.email.eq(email)
+                                                                : heart.user.email.isNull()
+                                                )
                                 ).gt(0L),
                         "isHearted"
                 )
