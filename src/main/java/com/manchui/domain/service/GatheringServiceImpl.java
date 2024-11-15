@@ -361,6 +361,27 @@ public class GatheringServiceImpl implements GatheringService {
         return new ClosedGatheringResponse(gatheringList.size(), closedGatheringList);
     }
 
+    /**
+     * 10. 유저가 요청한 마감된 모임 상세 내용 조회
+     * 작성자: 오예령
+     *
+     * @param email       유저 email
+     * @param gatheringId 모임 id
+     * @return 해당하는 모임 상세 내용 반환
+     */
+    @Override
+    public ClosedGatheringInfoResponse getClosedGatheringInfo(String email, Long gatheringId) {
+
+        User user = userService.checkUser(email);
+        Gathering gathering = gatheringReader.checkGatheringStatusIsClosed(gatheringId);
+
+        if (gathering.getUser() != user) throw new CustomException(PERMISSION_DENIED);
+
+        String gatheringImage = imageRepository.findByGatheringId(gatheringId).getFilePath();
+
+        return gathering.toClosedResponseDto(gatheringImage);
+    }
+
     // 참여 여부 판단
     private void handleExistingAttendance(Attendance attendance) {
 

@@ -28,4 +28,6 @@ public interface GatheringService {
 
     ClosedGatheringResponse getClosedGathering(String email);
 
+    ClosedGatheringInfoResponse getClosedGatheringInfo(String email, Long gatheringId);
+
 }

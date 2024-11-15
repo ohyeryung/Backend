@@ -183,4 +183,11 @@ public class GatheringController {
         return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getClosedGathering(userDetails.getUsername())));
     }
 
+    @GetMapping("/{gatheringId}")
+    public ResponseEntity<SuccessResponse<ClosedGatheringInfoResponse>> getClosedGatheringInfo(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                                               @PathVariable Long gatheringId) {
+
+        return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getClosedGatheringInfo(userDetails.getUsername(), gatheringId)));
+    }
+
 }
