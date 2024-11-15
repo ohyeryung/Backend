@@ -20,9 +20,7 @@ public interface GatheringService {
 
     void heartCancelGathering(String email, Long gatheringId);
 
-    GatheringInfoResponse getGatheringInfoByGuest(Long gatheringId, Pageable pageable);
-
-    GatheringInfoResponse getGatheringInfoByUser(String email, Long gatheringId, Pageable pageable);
+    GatheringInfoResponse getGatheringInfo(CustomUserDetails userDetails, Long gatheringId, Pageable pageable);
 
     void cancelGathering(String email, Long gatheringId);
 
