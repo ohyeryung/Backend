@@ -40,9 +40,13 @@ public class JWTFilter extends OncePerRequestFilter {
                 (requestUri.matches("^\\/api\\/auths\\/check-name$") && requestMethod.equals("POST")) ||
                 (requestUri.matches("^\\/api\\/auths\\/signin$") && requestMethod.equals("POST")) ||
                 (requestUri.matches("^\\/api\\/reviews$") && requestMethod.equals("GET")) ||
+
                 (requestUri.matches("^/swagger-ui(/.*)?$")) ||
                 (requestUri.matches("^/swagger-ui.html$")) ||
                 (requestUri.matches("^/v3/api-docs(?:/.*)?$"))) {
+
+                (requestUri.matches("^\\/api\\/auths\\/reissue$") && requestMethod.equals("POST"))) {
+
             filterChain.doFilter(request, response);
             return;
         }

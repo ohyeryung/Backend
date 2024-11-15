@@ -41,7 +41,7 @@ public class UserController {
                                                                               @ModelAttribute @Valid UserEditInfoRequest userEditInfoRequest) {
 
         String userEmail = userDetails.getUsername();
-        userService.checkName(userEditInfoRequest.getName());
+        userService.checkName(userEditInfoRequest.getName(), userEmail);
         UUID userId = userService.editUserInfo(userEmail, userEditInfoRequest);
         User user = userService.findByUserId(userId);
         UserEditInfoResponse response = UserEditInfoResponse.builder()
