@@ -170,4 +170,17 @@ public class GatheringController {
         return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getHeartList(userDetails.getUsername(), pageable, query, location, startDate, endDate, category, sort, available)));
     }
 
+
+    @Operation(summary = "마감된 모임 목록 조회", description = "회원이 생성한 모임 중 마감된 모임 목록을 반환합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "회원의 모임 중 마감된 모임 목록입니다.",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "200", description = "마감된 모임이 존재하지 않습니다.")
+    })
+    @GetMapping("")
+    public ResponseEntity<SuccessResponse<ClosedGatheringResponse>> getClosedGathering(@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getClosedGathering(userDetails.getUsername())));
+    }
+
 }

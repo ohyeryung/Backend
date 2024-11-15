@@ -26,4 +26,6 @@ public interface GatheringService {
 
     GatheringPagingResponse getHeartList(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort, boolean available);
 
+    ClosedGatheringResponse getClosedGathering(String email);
+
 }
