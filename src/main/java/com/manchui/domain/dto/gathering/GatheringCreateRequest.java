@@ -39,7 +39,8 @@ public class GatheringCreateRequest {
     @Max(100)
     private int minUsers;
 
-    @Size(min = 10, max = 255)
+    @NotBlank(message = "모임 설명은 필수 입력 값입니다.")
+    @Size(min = 10, max = 1000, message = "모임 내용은 10자 이상 1000자 이하로 입력해주세요.")
     private String gatheringContent;
 
     public Gathering toRegisterEntity(User user, LocalDateTime gatheringDate, LocalDateTime dueDate) {
