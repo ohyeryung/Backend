@@ -97,9 +97,7 @@ public class GatheringCursorQueryDslImpl implements GatheringCursorQueryDsl {
     }
 
     private ConstructorExpression<GatheringListResponse> buildGatheringListProjection(String email) {
-
-        log.info("사용자 email : {}", email);
-
+        
         return Projections.constructor(
                 GatheringListResponse.class,
                 user.name.as("name"),
