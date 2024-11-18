@@ -39,6 +39,8 @@ public class GatheringInfoResponse {
 
     private int currentUsers;
 
+    private int heartCounts;
+
     private boolean isOpened;
 
     private boolean isCanceled;
@@ -57,7 +59,7 @@ public class GatheringInfoResponse {
 
     private ReviewDetailPagingResponse reviewsList;
 
-    public GatheringInfoResponse(Gathering gathering, String filePath, int currentUsers, boolean isHearted, List<UserInfo> userInfoList, ReviewDetailPagingResponse reviewsList) {
+    public GatheringInfoResponse(Gathering gathering, String filePath, int currentUsers, int heartCounts, boolean isHearted, List<UserInfo> userInfoList, ReviewDetailPagingResponse reviewsList) {
 
         this.gatheringId = gathering.getId();
         this.name = gathering.getUser().getName();
@@ -72,6 +74,7 @@ public class GatheringInfoResponse {
         this.maxUsers = gathering.getMaxUsers();
         this.minUsers = gathering.getMinUsers();
         this.currentUsers = currentUsers;
+        this.heartCounts = heartCounts;
         this.isOpened = gathering.isOpened();
         this.isCanceled = gathering.isCanceled();
         this.isClosed = gathering.isClosed();

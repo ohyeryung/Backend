@@ -33,6 +33,8 @@ public class GatheringListResponse {
 
     private Long currentUsers;
 
+    private Long heartCounts;
+
     private boolean isOpened;
 
     private boolean isClosed;

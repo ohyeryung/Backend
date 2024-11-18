@@ -78,7 +78,10 @@ public class UserService {
     }
 
     //유저 이름 중복 확인
-    public void checkName(String name) {
+    public void checkName(String name, String userEmail) {
+        if (userRepository.findByEmail(userEmail).getName().equals(name)) {
+            return;
+        }
         if (userRepository.existsByName(name)) {
             throw new CustomException(ILLEGAL_USERNAME_DUPLICATION);
         }
@@ -157,7 +160,7 @@ public class UserService {
 
             return new WrittenReviewInfo(m.getGathering().getId(), m.getScore(),
                     m.getGathering().getGroupName(), m.getGathering().getCategory(),
-                    m.getGathering().getLocation(), filePath, m.getGathering().getGatheringDate(), m.getCreatedAt(), m.getUpdatedAt());
+                    m.getGathering().getLocation(), m.getComment(),filePath, m.getGathering().getGatheringDate(), m.getCreatedAt(), m.getUpdatedAt());
         });
         //응답 데이터 반환
         return new UserWrittenReviewsResponse(writtenReviewInfos.getNumberOfElements(), writtenReviewInfos,

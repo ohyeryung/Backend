@@ -6,6 +6,7 @@ import com.manchui.domain.dto.review.ReviewCreateResponse;
 import com.manchui.domain.dto.review.ReviewDetailPagingResponse;
 import com.manchui.domain.service.ReviewService;
 import com.manchui.global.response.SuccessResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "Reviews")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/reviews")

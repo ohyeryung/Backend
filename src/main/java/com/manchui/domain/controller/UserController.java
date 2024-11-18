@@ -5,6 +5,7 @@ import com.manchui.domain.dto.User.*;
 import com.manchui.domain.entity.User;
 import com.manchui.domain.service.UserService;
 import com.manchui.global.response.SuccessResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -12,10 +13,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
+@Tag(name = "Users")
 @RestController
 @RequiredArgsConstructor
 public class UserController {
@@ -33,10 +38,10 @@ public class UserController {
 
     @PutMapping("/api/auths/user")
     public ResponseEntity<SuccessResponse<UserEditInfoResponse>> editUserInfo(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                          @ModelAttribute @Valid UserEditInfoRequest userEditInfoRequest) {
+                                                                              @ModelAttribute @Valid UserEditInfoRequest userEditInfoRequest) {
 
         String userEmail = userDetails.getUsername();
-        userService.checkName(userEditInfoRequest.getName());
+        userService.checkName(userEditInfoRequest.getName(), userEmail);
         UUID userId = userService.editUserInfo(userEmail, userEditInfoRequest);
         User user = userService.findByUserId(userId);
         UserEditInfoResponse response = UserEditInfoResponse.builder()

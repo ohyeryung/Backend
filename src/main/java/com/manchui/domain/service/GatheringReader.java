@@ -21,4 +21,6 @@ public interface GatheringReader {
 
     Gathering checkGatheringStatusIsCanceled(Long gatheringId);
 
+    List<Gathering> findClosedGathering(User user);
+
 }

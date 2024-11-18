@@ -2,10 +2,7 @@ package com.manchui.domain.service;
 
 import com.manchui.domain.dto.CustomUserDetails;
 import com.manchui.domain.dto.UserInfo;
-import com.manchui.domain.dto.gathering.GatheringCreateRequest;
-import com.manchui.domain.dto.gathering.GatheringCreateResponse;
-import com.manchui.domain.dto.gathering.GatheringInfoResponse;
-import com.manchui.domain.dto.gathering.GatheringPagingResponse;
+import com.manchui.domain.dto.gathering.*;
 import com.manchui.domain.dto.review.ReviewDetailPagingResponse;
 import com.manchui.domain.dto.review.ReviewInfo;
 import com.manchui.domain.dto.review.ReviewScoreInfo;
@@ -19,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -62,6 +60,12 @@ public class GatheringServiceImpl implements GatheringService {
     @Transactional
     public GatheringCreateResponse createGathering(String email, GatheringCreateRequest createRequest) {
 
+        log.info("모임 내용 길이 : {}", createRequest.getGatheringContent().getBytes(StandardCharsets.UTF_8).length);
+
+        if (createRequest.getGatheringContent().getBytes(StandardCharsets.UTF_8).length > 1000) {
+            throw new IllegalArgumentException("내용이 DB 제한을 초과합니다.");
+        }
+
         // 0. 유저 검증
         User user = userService.checkUser(email);
 
@@ -97,7 +101,7 @@ public class GatheringServiceImpl implements GatheringService {
             });
             heartRepository.deleteAll(heartRepository.findByGathering(gathering));
 
-            log.info("모임 재생성: 주최자 {}가 모임 id{}의 '{}'을 다시 모집 중으로 변경했습니다.", user.getName(), gathering.getId(), gathering.getGroupName());
+            log.info("모임 재생성: 주최자 {}가 모임 id {}의 '{}'을 다시 모집 중으로 변경했습니다.", user.getName(), gathering.getId(), gathering.getGroupName());
             Image image = imageRepository.findByGatheringId(gathering.getId());
             return gathering.toResponseDto(image.getFilePath());
 
@@ -108,7 +112,7 @@ public class GatheringServiceImpl implements GatheringService {
 
             // 3. 주최자를 모임에 자동으로 참여시킴
             attendanceRepository.save(Attendance.builder().user(user).gathering(gathering).build());
-            log.info("새 모임 생성: 주최자 {}가 모임 id{}의 '{}'에 자동으로 참여되었습니다.", user.getName(), gathering.getId(), gathering.getGroupName());
+            log.info("새 모임 생성: 주최자 {}가 모임 id {}의 '{}'에 자동으로 참여되었습니다.", user.getName(), gathering.getId(), gathering.getGroupName());
 
             Image image = imageRepository.findByGatheringId(gathering.getId());
             return gathering.toResponseDto(image.getFilePath());
@@ -120,27 +124,34 @@ public class GatheringServiceImpl implements GatheringService {
      * 작성자: 오예령
      *
      * @param userDetails 유저 정보 객체
-     * @param pageable    페이징 처리에 필요한 데이터
+     * @param cursor      커서 id
+     * @param size        조회 요청 개수
      * @param query       검색 키워드
      * @param location    위치
      * @param startDate   시작 날짜
      * @param endDate     끝 날짜
      * @param category    모임 카테고리
      * @param sort        정렬 기준
+     * @param available   사용자가 참여한 모임만 조회할지 여부를 나타내는 boolean 값
      * @return 요청한 범위에 대한 모임 List 반환
      */
     @Override
     @Transactional
-    public GatheringPagingResponse getGatherings(CustomUserDetails userDetails, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort, boolean available) {
+    public GatheringCursorPagingResponse getGatherings(CustomUserDetails userDetails, Long cursor, int size, String query, String location, String startDate, String endDate, String category, String sort, boolean available) {
+
+        GatheringCursorPagingResponse response;
 
         if (userDetails != null && !userDetails.isGuest()) {
-            // 회원일 경우의 로직
-            return new GatheringPagingResponse(gatheringRepository.getGatheringListByUser(userDetails.getUsername(), pageable, query, location, startDate, endDate, category, sort, available));
+            // 회원일 경우, 모임 목록과 총 개수 조회
+            response = gatheringRepository.getGatheringListByUser(userDetails.getUsername(), cursor, size, query, location, startDate, endDate, category, sort, available);
         } else {
-            // 비회원일 경우의 로직
-            return new GatheringPagingResponse(gatheringRepository.getGatheringListByGuest(pageable, query, location, startDate, endDate, category, sort, available));
+            // 비회원일 경우, 모임 목록과 총 개수 조회
+            response = gatheringRepository.getGatheringListByGuest(cursor, size, query, location, startDate, endDate, category, sort, available);
         }
+
+        return response;
     }
+
 
     /**
      * 2. 모임 참여
@@ -264,31 +275,25 @@ public class GatheringServiceImpl implements GatheringService {
     }
 
     /**
-     * 6. 모임 상세 조회 (비회원)
-     * 작성자: 오예령
+     * 6. 모임 상세 조회
      *
+     * @param userDetails 유저 정보 객체
      * @param gatheringId 모임 id
      * @param pageable    페이징 처리 시 필요한 항목
      * @return 해당하는 모임의 상세 내용
      */
     @Override
-    public GatheringInfoResponse getGatheringInfoByGuest(Long gatheringId, Pageable pageable) {
+    public GatheringInfoResponse getGatheringInfo(CustomUserDetails userDetails, Long gatheringId, Pageable pageable) {
 
-        return createGatheringInfoResponse(gatheringId, pageable, false, null);
-    }
+        GatheringInfoResponse response;
 
-    /**
-     * 6-1. 모임 상세 조회 (회원)
-     *
-     * @param email       유저 email
-     * @param gatheringId 모임 id
-     * @return 해당하는 모임의 상세 내용
-     */
-    @Override
-    public GatheringInfoResponse getGatheringInfoByUser(String email, Long gatheringId, Pageable pageable) {
+        if (userDetails != null && !userDetails.isGuest()) {
+            response = createGatheringInfoResponse(gatheringId, pageable, true, userDetails.getUsername());
+        } else {
+            response = createGatheringInfoResponse(gatheringId, pageable, false, null);
+        }
 
-        User user = userService.checkUser(email);
-        return createGatheringInfoResponse(gatheringId, pageable, true, user);
+        return response;
     }
 
     /**
@@ -323,6 +328,7 @@ public class GatheringServiceImpl implements GatheringService {
      * @param endDate   끝 날짜
      * @param category  모임 카테고리
      * @param sort      정렬 기준
+     * @param available 사용자가 참여한 모임만 조회할지 여부를 나타내는 boolean 값
      * @return 유저가 찜한 모임의 목록 반환
      */
     @Override
@@ -330,6 +336,50 @@ public class GatheringServiceImpl implements GatheringService {
     public GatheringPagingResponse getHeartList(String email, Pageable pageable, String query, String location, String startDate, String endDate, String category, String sort, boolean available) {
 
         return new GatheringPagingResponse(gatheringRepository.getHeartList(email, pageable, query, location, startDate, endDate, category, sort, available));
+    }
+
+    /**
+     * 9. 유저가 생성한 모임 중 마감된 모임 목록 조회
+     * 작성자: 오예령
+     *
+     * @param email 유저 email
+     * @return 해당하는 모임 list 반환
+     */
+    @Override
+    public ClosedGatheringResponse getClosedGathering(String email) {
+
+        User user = userService.checkUser(email);
+
+        List<Gathering> gatheringList = gatheringReader.findClosedGathering(user);
+
+        if (gatheringList.isEmpty()) throw new CustomException(WRITTEN_GATHERING_NOT_EXIST);
+
+        List<ClosedGathering> closedGatheringList = gatheringList.stream()
+                .map(gathering -> new ClosedGathering(gathering.getId(), gathering.getGroupName())
+                ).toList();
+
+        return new ClosedGatheringResponse(gatheringList.size(), closedGatheringList);
+    }
+
+    /**
+     * 10. 유저가 요청한 마감된 모임 상세 내용 조회
+     * 작성자: 오예령
+     *
+     * @param email       유저 email
+     * @param gatheringId 모임 id
+     * @return 해당하는 모임 상세 내용 반환
+     */
+    @Override
+    public ClosedGatheringInfoResponse getClosedGatheringInfo(String email, Long gatheringId) {
+
+        User user = userService.checkUser(email);
+        Gathering gathering = gatheringReader.checkGatheringStatusIsClosed(gatheringId);
+
+        if (gathering.getUser() != user) throw new CustomException(PERMISSION_DENIED);
+
+        String gatheringImage = imageRepository.findByGatheringId(gatheringId).getFilePath();
+
+        return gathering.toClosedResponseDto(gatheringImage);
     }
 
     // 참여 여부 판단
@@ -345,7 +395,7 @@ public class GatheringServiceImpl implements GatheringService {
     }
 
     // 상세 조회 응답 객체 생성
-    private GatheringInfoResponse createGatheringInfoResponse(Long gatheringId, Pageable pageable, boolean isUser, User user) {
+    private GatheringInfoResponse createGatheringInfoResponse(Long gatheringId, Pageable pageable, boolean isUser, String email) {
 
         log.info("모임 id {} 의 상세 조회 응답 객체 생성 중입니다.", gatheringId);
         Gathering gathering = gatheringReader.checkGathering(gatheringId);
@@ -358,9 +408,15 @@ public class GatheringServiceImpl implements GatheringService {
         int currentUsers = userInfoList.size();
         log.info("현재 모임 id {}의 참여자 수: {}", gatheringId, currentUsers);
 
-        boolean isHearted = isUser && heartRepository.findByUserAndGathering(user, gathering).isPresent();
+        List<Heart> byGathering = heartRepository.findByGathering(gathering);
 
-        return new GatheringInfoResponse(gathering, image.getFilePath(), currentUsers, isHearted, userInfoList, reviewsList);
+        int heartCounts = byGathering.size();
+
+        // 사용자 정보와 좋아요 여부 확인
+        Optional<User> user = Optional.ofNullable(email).map(userService::checkUser);
+        boolean isHearted = isUser && user.flatMap(u -> heartRepository.findByUserAndGathering(u, gathering)).isPresent();
+
+        return new GatheringInfoResponse(gathering, image.getFilePath(), currentUsers, heartCounts, isHearted, userInfoList, reviewsList);
     }
 
     // 상세 조회 후기 관련 응답 객체 생성

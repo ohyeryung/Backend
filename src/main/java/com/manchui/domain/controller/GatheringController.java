@@ -1,19 +1,16 @@
 package com.manchui.domain.controller;
 
 import com.manchui.domain.dto.CustomUserDetails;
-import com.manchui.domain.dto.gathering.GatheringCreateRequest;
-import com.manchui.domain.dto.gathering.GatheringCreateResponse;
-import com.manchui.domain.dto.gathering.GatheringInfoResponse;
-import com.manchui.domain.dto.gathering.GatheringPagingResponse;
+import com.manchui.domain.dto.gathering.*;
 import com.manchui.domain.service.GatheringService;
 import com.manchui.global.response.SuccessResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -21,10 +18,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "Gatherings")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/gatherings")
-@Slf4j
 public class GatheringController {
 
     private final GatheringService gatheringService;
@@ -54,20 +51,18 @@ public class GatheringController {
             @ApiResponse(responseCode = "404", description = "해당하는 모임이 없습니다.")
     })
     @GetMapping("/public")
-    public ResponseEntity<SuccessResponse<GatheringPagingResponse>> getGatherings(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                                                  @RequestParam(defaultValue = "1") int page,
-                                                                                  @RequestParam int size,
-                                                                                  @RequestParam(required = false) String query,
-                                                                                  @RequestParam(required = false) String location,
-                                                                                  @RequestParam(required = false) String startDate,
-                                                                                  @RequestParam(required = false) String endDate,
-                                                                                  @RequestParam(required = false) String category,
-                                                                                  @RequestParam(required = false) String sort,
-                                                                                  @RequestParam(required = false) boolean available) {
+    public ResponseEntity<SuccessResponse<GatheringCursorPagingResponse>> getGatherings(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                                        @RequestParam(required = false) Long cursor, // 커서 파라미터 추가
+                                                                                        @RequestParam int size,
+                                                                                        @RequestParam(required = false) String query,
+                                                                                        @RequestParam(required = false) String location,
+                                                                                        @RequestParam(required = false) String startDate,
+                                                                                        @RequestParam(required = false) String endDate,
+                                                                                        @RequestParam(required = false) String category,
+                                                                                        @RequestParam(required = false) String sort,
+                                                                                        @RequestParam(required = false, defaultValue = "false") boolean available) {
 
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
-        GatheringPagingResponse response = gatheringService.getGatherings(userDetails, pageable, query, location, startDate, endDate, category, sort, available);
-
+        GatheringCursorPagingResponse response = gatheringService.getGatherings(userDetails, cursor, size, query, location, startDate, endDate, category, sort, available);
         return ResponseEntity.ok(SuccessResponse.successWithData(response));
     }
 
@@ -123,42 +118,27 @@ public class GatheringController {
         return ResponseEntity.ok().body(SuccessResponse.successWithNoData("모임에 누른 좋아요가 취소되었습니다."));
     }
 
-    @Operation(summary = "모임 상세 조회 (비회원)", description = "비회원이 요청하는 모임의 상세 내용을 반환합니다.")
+    @Operation(summary = "모임 상세 조회", description = "회원 및 비회원이 요청하는 모임의 상세 내용을 반환합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "비회원이 요청한 모임의 상세 내용이 반환되었습니다.",
+            @ApiResponse(responseCode = "200", description = "요청한 모임의 상세 내용이 반환되었습니다.",
                     content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "404", description = "해당하는 모임이 없습니다.")
     })
     @GetMapping("/public/{gatheringId}/reviews")
-    public ResponseEntity<SuccessResponse<GatheringInfoResponse>> getGatheringInfoByGuest(@PathVariable Long gatheringId,
-                                                                                          @RequestParam(defaultValue = "1") int page,
-                                                                                          @RequestParam int size) {
+    public ResponseEntity<SuccessResponse<GatheringInfoResponse>> getGatheringInfo(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                                   @PathVariable Long gatheringId,
+                                                                                   @RequestParam(defaultValue = "1") int page,
+                                                                                   @RequestParam int size) {
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
-        return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getGatheringInfoByGuest(gatheringId, pageable)));
+        return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getGatheringInfo(userDetails, gatheringId, pageable)));
     }
 
-    @Operation(summary = "모임 상세 조회 (회원)", description = "회원이 요청하는 모임의 상세 내용을 반환합니다.")
+    @Operation(summary = "모임 취소", description = "모임을 취소합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "회원이 요청한 모임의 상세 내용이 반환되었습니다.",
+            @ApiResponse(responseCode = "200", description = "모임이 취소되었습니다.",
                     content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "404", description = "해당하는 모임이 없습니다.")
-    })
-    @GetMapping("/{gatheringId}/reviews")
-    public ResponseEntity<SuccessResponse<GatheringInfoResponse>> getGatheringInfoByUser(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                                                         @PathVariable Long gatheringId,
-                                                                                         @RequestParam(defaultValue = "1") int page,
-                                                                                         @RequestParam int size) {
-
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
-        return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getGatheringInfoByUser(userDetails.getUsername(), gatheringId, pageable)));
-    }
-
-    @Operation(summary = "찜한 모임 목록 조회", description = "회원이 찜한 모임 목록을 반환합니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "회원의 찜한 모임 목록입니다.",
-                    content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "404", description = "찜한 모임이 없습니다.")
     })
     @PatchMapping("/{gatheringId}/cancel")
     public ResponseEntity<SuccessResponse<String>> cancelGathering(@AuthenticationPrincipal CustomUserDetails userDetails,
@@ -184,11 +164,36 @@ public class GatheringController {
                                                                                  @RequestParam(required = false) String endDate,
                                                                                  @RequestParam(required = false) String category,
                                                                                  @RequestParam(required = false) String sort,
-                                                                                 @RequestParam(required = false) boolean available) {
+                                                                                 @RequestParam(required = false, defaultValue = "false") boolean available) {
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
         return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getHeartList(userDetails.getUsername(), pageable, query, location, startDate, endDate, category, sort, available)));
     }
 
-}
 
+    @Operation(summary = "마감된 모임 목록 조회", description = "회원이 생성한 모임 중 마감된 모임 목록을 반환합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "회원의 모임 중 마감된 모임 목록입니다.",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "200", description = "마감된 모임이 존재하지 않습니다.")
+    })
+    @GetMapping("")
+    public ResponseEntity<SuccessResponse<ClosedGatheringResponse>> getClosedGathering(@AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getClosedGathering(userDetails.getUsername())));
+    }
+
+    @Operation(summary = "마감된 모임 상세 조회", description = "회원이 생성한 모임 중 마감된 모임의 상세 내용을 반환합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "회원의 모임 중 마감된 모임의 상세 내용입니다.",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "400", description = "본인의 모임만 관리가 가능합니다.")
+    })
+    @GetMapping("/{gatheringId}")
+    public ResponseEntity<SuccessResponse<ClosedGatheringInfoResponse>> getClosedGatheringInfo(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                                               @PathVariable Long gatheringId) {
+
+        return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getClosedGatheringInfo(userDetails.getUsername(), gatheringId)));
+    }
+
+}

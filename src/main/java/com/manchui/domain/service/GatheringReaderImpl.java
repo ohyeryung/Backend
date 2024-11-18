@@ -89,5 +89,17 @@ public class GatheringReaderImpl implements GatheringReader {
         return gathering;
     }
 
+    @Override
+    public List<Gathering> findClosedGathering(User user) {
+
+        // 유저가 생성한 모임 중 마감되었으면서 취소되지 않고 실제 모임 날짜도 지난 상태의 모임만 조회
+        List<Gathering> gatherings = gatheringRepository.findByUserAndIsClosedAndIsCanceled(user, true, false);
+
+        // 추가 조건으로 필터링
+        return gatherings.stream()
+                .filter(gathering -> gathering.getGatheringDate().isBefore(LocalDateTime.now()))
+                .toList();
+    }
+
 
 }
