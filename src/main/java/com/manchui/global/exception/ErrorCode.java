@@ -13,6 +13,21 @@ public enum ErrorCode {
     MISSING_EMAIL(HttpStatus.BAD_REQUEST, "아이디를 입력해주세요."),
     MISSING_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호를 입력해주세요."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 계정입니다."),
+    DUPLICATE_EMAIL_FOR_DIFFERENT_PROVIDER(HttpStatus.CONFLICT, "해당 이메일로 이미 다른 계정이 등록되어 있습니다"),
+
+    // Oauth2
+    KAKAO_TOKEN_FETCH_FAILED(HttpStatus.BAD_REQUEST, "카카오 액세스 토큰을 가져오는 데 실패했습니다."),
+    KAKAO_AUTHENTICATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 인증 과정에서 오류가 발생했습니다."),
+    KAKAO_USER_INFO_FETCH_FAILED(HttpStatus.BAD_REQUEST, "카카오 사용자 정보를 가져오는 데 실패했습니다."),
+    KAKAO_LOGIN_PROCESS_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "카카오 로그인 과정에서 오류가 발생했습니다."),
+    GOOGLE_TOKEN_FETCH_FAILED(HttpStatus.BAD_REQUEST, "구글 액세스 토큰을 가져오는 데 실패했습니다."),
+    GOOGLE_AUTHENTICATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "구글 인증 과정에서 오류가 발생했습니다."),
+    GOOGLE_USER_INFO_FETCH_FAILED(HttpStatus.BAD_REQUEST, "구글 사용자 정보를 가져오는 데 실패했습니다."),
+    GOOGLE_LOGIN_PROCESS_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "구글 로그인 과정에서 오류가 발생했습니다."),
+    NAVER_TOKEN_FETCH_FAILED(HttpStatus.BAD_REQUEST, "네이버 액세스 토큰을 가져오는 데 실패했습니다."),
+    NAVER_AUTHENTICATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "네이버 인증 과정에서 오류가 발생했습니다."),
+    NAVER_USER_INFO_FETCH_FAILED(HttpStatus.BAD_REQUEST, "네이버 사용자 정보를 가져오는 데 실패했습니다."),
+    NAVER_LOGIN_PROCESS_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "네이버 로그인 과정에서 오류가 발생했습니다."),
 
     // token
     MISSING_AUTHORIZATION_REFRESH_TOKEN(HttpStatus.BAD_REQUEST, "유효한 Refresh 토큰이 요청에 포함되지 않았습니다."),
