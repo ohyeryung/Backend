@@ -7,6 +7,7 @@ import com.manchui.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -90,9 +91,11 @@ public class UserService {
     //내가 작성한 모임 목록 조회
     public UserWrittenGatheringsResponse getWrittenGatheringList(String userEmail, Pageable pageable) {
 
+        PageRequest pageRequest = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize(), pageable.getSort());
+
         User user = userRepository.findByEmail(userEmail);
 
-        Page<Gathering> gatheringList = gatheringRepository.findByUserEquals(user, pageable);
+        Page<Gathering> gatheringList = gatheringRepository.findByUserEquals(user, pageRequest);
 
         //DTO에 맞게 변환
         Page<GatheringInfo> writtenGatheringList = gatheringList.map(m -> {
@@ -114,6 +117,8 @@ public class UserService {
     //사용자가 참여한 모임 목록 조회
     public UserParticipatedGatheringResponse getParticipatedGatheringList(String userEmail, Pageable pageable) {
 
+        PageRequest pageRequest = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize(), pageable.getSort());
+
         User user = userRepository.findByEmail(userEmail);
 
         //유저 모임 참여 엔티티 조회
@@ -129,7 +134,7 @@ public class UserService {
         }
 
         //참여한 모임 페이징 조회
-        Page<Gathering> gatheringList = gatheringRepository.findByIdIn(gatheringIdList, pageable);
+        Page<Gathering> gatheringList = gatheringRepository.findByIdIn(gatheringIdList, pageRequest);
 
         //GatheringInfo DTO로 변환
         Page<GatheringInfo> participatedGatheringList = gatheringList.map(m -> {
@@ -150,9 +155,11 @@ public class UserService {
     //내가 작성한 목록 조회
     public UserWrittenReviewsResponse getWrittenReviews(String userEmail, Pageable pageable) {
 
+        PageRequest pageRequest = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize(), pageable.getSort());
+
         User user = userRepository.findByEmail(userEmail);
         //리뷰 페이징 조회
-        Page<Review> reviews = reviewRepository.findByUser(user, pageable);
+        Page<Review> reviews = reviewRepository.findByUser(user, pageRequest);
         //사용자가 작성한 리뷰정보 DTO로 매핑
         Page<WrittenReviewInfo> writtenReviewInfos = reviews.map(m -> {
 
@@ -169,6 +176,8 @@ public class UserService {
 
     //리뷰 작성 가능한 모임 목록 조회
     public UserReviewableGatheringsResponse getReviewableGatherings(String userEmail, Pageable pageable) {
+
+        PageRequest pageRequest = PageRequest.of(pageable.getPageNumber() - 1, pageable.getPageSize(), pageable.getSort());
 
         User user = userRepository.findByEmail(userEmail);
         //참가 취소하지 않은 Attendance 조회
@@ -208,7 +217,7 @@ public class UserService {
             }
         }
         //리뷰 작성한 모임 페이징 조회
-        Page<Gathering> reviewableGatheringInfos = gatheringRepository.findByIdIn(reviewableGatheringIds, pageable);
+        Page<Gathering> reviewableGatheringInfos = gatheringRepository.findByIdIn(reviewableGatheringIds, pageRequest);
 
         //ReviewableGatheringInfo DTO에 맞게 변환
         Page<ReviewableGatheringInfo> map = reviewableGatheringInfos.map(m -> {
