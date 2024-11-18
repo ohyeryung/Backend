@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -58,6 +59,12 @@ public class GatheringServiceImpl implements GatheringService {
     @Override
     @Transactional
     public GatheringCreateResponse createGathering(String email, GatheringCreateRequest createRequest) {
+
+        log.info("모임 내용 길이 : {}", createRequest.getGatheringContent().getBytes(StandardCharsets.UTF_8).length);
+
+        if (createRequest.getGatheringContent().getBytes(StandardCharsets.UTF_8).length > 1000) {
+            throw new IllegalArgumentException("내용이 DB 제한을 초과합니다.");
+        }
 
         // 0. 유저 검증
         User user = userService.checkUser(email);
@@ -268,31 +275,25 @@ public class GatheringServiceImpl implements GatheringService {
     }
 
     /**
-     * 6. 모임 상세 조회 (비회원)
-     * 작성자: 오예령
+     * 6. 모임 상세 조회
      *
+     * @param userDetails 유저 정보 객체
      * @param gatheringId 모임 id
      * @param pageable    페이징 처리 시 필요한 항목
      * @return 해당하는 모임의 상세 내용
      */
     @Override
-    public GatheringInfoResponse getGatheringInfoByGuest(Long gatheringId, Pageable pageable) {
+    public GatheringInfoResponse getGatheringInfo(CustomUserDetails userDetails, Long gatheringId, Pageable pageable) {
 
-        return createGatheringInfoResponse(gatheringId, pageable, false, null);
-    }
+        GatheringInfoResponse response;
 
-    /**
-     * 6-1. 모임 상세 조회 (회원)
-     *
-     * @param email       유저 email
-     * @param gatheringId 모임 id
-     * @return 해당하는 모임의 상세 내용
-     */
-    @Override
-    public GatheringInfoResponse getGatheringInfoByUser(String email, Long gatheringId, Pageable pageable) {
+        if (userDetails != null && !userDetails.isGuest()) {
+            response = createGatheringInfoResponse(gatheringId, pageable, true, userDetails.getUsername());
+        } else {
+            response = createGatheringInfoResponse(gatheringId, pageable, false, null);
+        }
 
-        User user = userService.checkUser(email);
-        return createGatheringInfoResponse(gatheringId, pageable, true, user);
+        return response;
     }
 
     /**
@@ -350,7 +351,7 @@ public class GatheringServiceImpl implements GatheringService {
     }
 
     // 상세 조회 응답 객체 생성
-    private GatheringInfoResponse createGatheringInfoResponse(Long gatheringId, Pageable pageable, boolean isUser, User user) {
+    private GatheringInfoResponse createGatheringInfoResponse(Long gatheringId, Pageable pageable, boolean isUser, String email) {
 
         log.info("모임 id {} 의 상세 조회 응답 객체 생성 중입니다.", gatheringId);
         Gathering gathering = gatheringReader.checkGathering(gatheringId);
@@ -367,7 +368,9 @@ public class GatheringServiceImpl implements GatheringService {
 
         int heartCounts = byGathering.size();
 
-        boolean isHearted = isUser && heartRepository.findByUserAndGathering(user, gathering).isPresent();
+        // 사용자 정보와 좋아요 여부 확인
+        Optional<User> user = Optional.ofNullable(email).map(userService::checkUser);
+        boolean isHearted = isUser && user.flatMap(u -> heartRepository.findByUserAndGathering(u, gathering)).isPresent();
 
         return new GatheringInfoResponse(gathering, image.getFilePath(), currentUsers, heartCounts, isHearted, userInfoList, reviewsList);
     }

@@ -118,35 +118,20 @@ public class GatheringController {
         return ResponseEntity.ok().body(SuccessResponse.successWithNoData("모임에 누른 좋아요가 취소되었습니다."));
     }
 
-    @Operation(summary = "모임 상세 조회 (비회원)", description = "비회원이 요청하는 모임의 상세 내용을 반환합니다.")
+    @Operation(summary = "모임 상세 조회", description = "회원 및 비회원이 요청하는 모임의 상세 내용을 반환합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "비회원이 요청한 모임의 상세 내용이 반환되었습니다.",
+            @ApiResponse(responseCode = "200", description = "요청한 모임의 상세 내용이 반환되었습니다.",
                     content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "404", description = "해당하는 모임이 없습니다.")
     })
     @GetMapping("/public/{gatheringId}/reviews")
-    public ResponseEntity<SuccessResponse<GatheringInfoResponse>> getGatheringInfoByGuest(@PathVariable Long gatheringId,
-                                                                                          @RequestParam(defaultValue = "1") int page,
-                                                                                          @RequestParam int size) {
+    public ResponseEntity<SuccessResponse<GatheringInfoResponse>> getGatheringInfo(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                                   @PathVariable Long gatheringId,
+                                                                                   @RequestParam(defaultValue = "1") int page,
+                                                                                   @RequestParam int size) {
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
-        return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getGatheringInfoByGuest(gatheringId, pageable)));
-    }
-
-    @Operation(summary = "모임 상세 조회 (회원)", description = "회원이 요청하는 모임의 상세 내용을 반환합니다.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "회원이 요청한 모임의 상세 내용이 반환되었습니다.",
-                    content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "404", description = "해당하는 모임이 없습니다.")
-    })
-    @GetMapping("/{gatheringId}/reviews")
-    public ResponseEntity<SuccessResponse<GatheringInfoResponse>> getGatheringInfoByUser(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                                                         @PathVariable Long gatheringId,
-                                                                                         @RequestParam(defaultValue = "1") int page,
-                                                                                         @RequestParam int size) {
-
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
-        return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getGatheringInfoByUser(userDetails.getUsername(), gatheringId, pageable)));
+        return ResponseEntity.ok(SuccessResponse.successWithData(gatheringService.getGatheringInfo(userDetails, gatheringId, pageable)));
     }
 
     @Operation(summary = "모임 취소", description = "모임을 취소합니다.")
