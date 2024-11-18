@@ -338,6 +338,50 @@ public class GatheringServiceImpl implements GatheringService {
         return new GatheringPagingResponse(gatheringRepository.getHeartList(email, pageable, query, location, startDate, endDate, category, sort, available));
     }
 
+    /**
+     * 9. 유저가 생성한 모임 중 마감된 모임 목록 조회
+     * 작성자: 오예령
+     *
+     * @param email 유저 email
+     * @return 해당하는 모임 list 반환
+     */
+    @Override
+    public ClosedGatheringResponse getClosedGathering(String email) {
+
+        User user = userService.checkUser(email);
+
+        List<Gathering> gatheringList = gatheringReader.findClosedGathering(user);
+
+        if (gatheringList.isEmpty()) throw new CustomException(WRITTEN_GATHERING_NOT_EXIST);
+
+        List<ClosedGathering> closedGatheringList = gatheringList.stream()
+                .map(gathering -> new ClosedGathering(gathering.getId(), gathering.getGroupName())
+                ).toList();
+
+        return new ClosedGatheringResponse(gatheringList.size(), closedGatheringList);
+    }
+
+    /**
+     * 10. 유저가 요청한 마감된 모임 상세 내용 조회
+     * 작성자: 오예령
+     *
+     * @param email       유저 email
+     * @param gatheringId 모임 id
+     * @return 해당하는 모임 상세 내용 반환
+     */
+    @Override
+    public ClosedGatheringInfoResponse getClosedGatheringInfo(String email, Long gatheringId) {
+
+        User user = userService.checkUser(email);
+        Gathering gathering = gatheringReader.checkGatheringStatusIsClosed(gatheringId);
+
+        if (gathering.getUser() != user) throw new CustomException(PERMISSION_DENIED);
+
+        String gatheringImage = imageRepository.findByGatheringId(gatheringId).getFilePath();
+
+        return gathering.toClosedResponseDto(gatheringImage);
+    }
+
     // 참여 여부 판단
     private void handleExistingAttendance(Attendance attendance) {
 

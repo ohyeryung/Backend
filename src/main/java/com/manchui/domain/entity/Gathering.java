@@ -1,5 +1,6 @@
 package com.manchui.domain.entity;
 
+import com.manchui.domain.dto.gathering.ClosedGatheringInfoResponse;
 import com.manchui.domain.dto.gathering.GatheringCreateResponse;
 import com.manchui.global.entity.Timestamped;
 import jakarta.persistence.*;
@@ -135,6 +136,20 @@ public class Gathering extends Timestamped {
         this.minUsers = minUsers;
         this.gatheringContent = gatheringContent;
 
+    }
+
+    public ClosedGatheringInfoResponse toClosedResponseDto(String gatheringImage) {
+
+        return ClosedGatheringInfoResponse.builder()
+                .gatheringId(id)
+                .groupName(groupName)
+                .category(category)
+                .location(location)
+                .gatheringImage(gatheringImage)
+                .content(getGatheringContent())
+                .maxUsers(maxUsers)
+                .minUsers(minUsers)
+                .build();
     }
 
 }

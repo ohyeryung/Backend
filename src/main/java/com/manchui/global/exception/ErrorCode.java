@@ -23,6 +23,7 @@ public enum ErrorCode {
 
     // gathering
     ALREADY_USED_GROUP_NAME(HttpStatus.CONFLICT, "기존에 등록된 이름의 모임이 존재합니다."),
+    WRITTEN_GATHERING_NOT_EXIST(HttpStatus.OK, "생성한 모임 중 마감된 모임이 존재하지 않습니다."),
     ILLEGAL_MIN_USERS(HttpStatus.BAD_REQUEST, "최소 인원은 최대 인원보다 클 수 없습니다."),
     ILLEGAL_DUE_DATE(HttpStatus.BAD_REQUEST, "마감 기한은 최소 하루 이상이어야 합니다."),
     ILLEGAL_GATHERING_DATE(HttpStatus.BAD_REQUEST, "모임 날짜는 현재 시점으로부터 최소 24시간 이후여야 합니다."),
@@ -38,10 +39,10 @@ public enum ErrorCode {
     MUST_JOIN_IN(HttpStatus.BAD_REQUEST, "모임 주최자는 필수 참석입니다"),
 
     // review
-    ILLEGAL_GATHERING_STATUS(HttpStatus.BAD_REQUEST, "마감된 모임만 후기 등록이 가능합니다."),
+    ILLEGAL_GATHERING_STATUS(HttpStatus.BAD_REQUEST, "현재 마감된 모임이 아닙니다."),
     ALREADY_REVIEW_EXIST(HttpStatus.BAD_REQUEST, "참여한 모임에 대한 후기는 1회만 등록 가능합니다."),
     REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 후기입니다."),
-    PERMISSION_DENIED(HttpStatus.BAD_REQUEST, "본인이 작성한 후기만 수정/삭제가 가능합니다."),
+    PERMISSION_DENIED(HttpStatus.BAD_REQUEST, "본인이 작성한 모임/후기만 관리 가능합니다."),
 
     // image
     ILLEGAL_EMPTY_FILE(HttpStatus.BAD_REQUEST, "이미지 파일은 필수 입력 값입니다."),
