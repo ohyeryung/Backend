@@ -77,13 +77,11 @@
 
 ## 🛠️ 프로젝트 환경
 
-| Stack                                                                                                        | Version           |
-|:------------------------------------------------------------------------------------------------------------:|:-----------------:|
-| ![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white) | Spring Boot 3.3.x |
-| ![Gradle](https://img.shields.io/badge/Gradle-02303A.svg?style=for-the-badge&logo=Gradle&logoColor=white)    | Gradle 8.10       |
-| ![Java](https://img.shields.io/badge/java-%23ED8B00.svg?style=for-the-badge&logo=openjdk&logoColor=white)    | JDK 17           |
-| ![MySQL](https://img.shields.io/badge/mysql-4479A1.svg?style=for-the-badge&logo=mysql&logoColor=white)       | MySQL 8.0        |
-| ![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)    | Redis 6.0        |
+# 기술 스택
+![image](https://github.com/user-attachments/assets/85b8ad30-b1dd-416a-b82f-594946e17143)
+
+# 인프라
+![image](https://github.com/user-attachments/assets/9aeb1a8f-ee69-4c1a-851c-1b39d2eaed69)
 
 <br/>
 
