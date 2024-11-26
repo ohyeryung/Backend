@@ -100,7 +100,7 @@ TODO : 아키텍처 이미지 첨부 예정
 
 ### 🧾 API 명세서
 
- > 자세한 명세는 <a href="https://documenter.getpostman.com/view/20456478/2sAXjM4Xgs">🔗여기</a> 를 클릭해주세요! `(Postman API)`
+ > 자세한 명세는 <a href="https://documenter.getpostman.com/view/39384426/2sAYBVhBdg">🔗여기</a> 를 클릭해주세요! `(Postman API)`
 
 <br>
 
