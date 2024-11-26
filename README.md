@@ -77,11 +77,11 @@
 
 ## 🛠️ 프로젝트 환경
 
-# 기술 스택
-![image](https://github.com/user-attachments/assets/85b8ad30-b1dd-416a-b82f-594946e17143)
+### 기술 스택
+<img src="https://github.com/user-attachments/assets/85b8ad30-b1dd-416a-b82f-594946e17143" width="500" />
 
-# 인프라
-![image](https://github.com/user-attachments/assets/9aeb1a8f-ee69-4c1a-851c-1b39d2eaed69)
+### 인프라
+<img src="https://github.com/user-attachments/assets/9aeb1a8f-ee69-4c1a-851c-1b39d2eaed69" width="500" />
 
 <br/>
 
