@@ -107,7 +107,7 @@ TODO : 아키텍처 이미지 첨부 예정
 <br>
 
 ## ⛓️ ERD
-<img src="" width="80%">
+<img width="1221" alt="image" src="https://github.com/user-attachments/assets/8ffc76a4-d372-4d98-bc32-eb68f68fecd0">
 
 <br>
 
