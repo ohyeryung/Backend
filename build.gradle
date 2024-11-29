@@ -70,6 +70,9 @@ dependencies {
 
     //Oauth2 의존성
     implementation "org.springframework.boot:spring-boot-starter-oauth2-client"
+
+    //spring-test 의존성
+    implementation 'org.springframework:spring-test:6.1.13'
 }
 
 tasks.processResources {
