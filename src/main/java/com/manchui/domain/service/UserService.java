@@ -1,5 +1,6 @@
 package com.manchui.domain.service;
 
+import com.manchui.domain.dto.CustomUserDetails;
 import com.manchui.domain.dto.User.*;
 import com.manchui.domain.entity.*;
 import com.manchui.domain.repository.*;
@@ -7,6 +8,7 @@ import com.manchui.global.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -110,7 +112,7 @@ public class UserService {
 
         return new UserWrittenGatheringsResponse(
                 writtenGatheringList.getNumberOfElements(), writtenGatheringList,
-                writtenGatheringList.getSize(), writtenGatheringList.getNumber(),
+                writtenGatheringList.getSize(), writtenGatheringList.getNumber() + 1,
                 writtenGatheringList.getTotalPages());
     }
 
@@ -149,7 +151,7 @@ public class UserService {
         });
 
         return new UserParticipatedGatheringResponse(gatheringList.getNumberOfElements(), participatedGatheringList
-                , participatedGatheringList.getSize(), participatedGatheringList.getNumber(), participatedGatheringList.getTotalPages());
+                , participatedGatheringList.getSize(), participatedGatheringList.getNumber() + 1, participatedGatheringList.getTotalPages());
     }
 
     //내가 작성한 목록 조회
@@ -171,7 +173,7 @@ public class UserService {
         });
         //응답 데이터 반환
         return new UserWrittenReviewsResponse(writtenReviewInfos.getNumberOfElements(), writtenReviewInfos,
-                writtenReviewInfos.getSize(), writtenReviewInfos.getNumber(), writtenReviewInfos.getTotalPages());
+                writtenReviewInfos.getSize(), writtenReviewInfos.getNumber() + 1, writtenReviewInfos.getTotalPages());
     }
 
     //리뷰 작성 가능한 모임 목록 조회
@@ -230,6 +232,6 @@ public class UserService {
                     participantUsers, m.getCreatedAt(), m.getUpdatedAt());
         });
 
-        return new UserReviewableGatheringsResponse(map.getNumberOfElements(), map, map.getSize(), map.getNumber(), map.getTotalPages());
+        return new UserReviewableGatheringsResponse(map.getNumberOfElements(), map, map.getSize(), map.getNumber() + 1, map.getTotalPages());
     }
 }
