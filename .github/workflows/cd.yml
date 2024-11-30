@@ -93,6 +93,26 @@ jobs:
           
             # active_env.txt 파일 업데이트
             echo $NEXT_ENV > active_env.txt
+          
+            # Nginx proxy_pass 전환
+            if [ "$NEXT_ENV" == "blue" ]; then
+              sed -i 's|proxy_pass http://green;|proxy_pass http://blue;|g' Nginx/config/nginx.conf
+            else
+              sed -i 's|proxy_pass http://blue;|proxy_pass http://green;|g' Nginx/config/nginx.conf
+            fi
+
+            echo "Nginx 설정 변경 사항 반영 중입니다..."
+          
+            # Nginx 설정 파일 검증
+            if ! docker exec nginx-container nginx -t; then
+              echo "Nginx 설정 파일 검증 실패! Nginx 로그 확인 필요.";
+              docker logs nginx-container;
+              exit 1;
+            fi
+          
+            # Nginx 설정 다시 로드 (무중단)
+            docker exec nginx-container nginx -s reload
+            echo "Nginx 설정 파일이 성공적으로 반영되었습니다."
           EOF
           
       - name: 이전 환경 컨테이너 정리
@@ -109,23 +129,6 @@ jobs:
             else
               echo "현재 환경과 이전 환경이 동일합니다. 정리 작업을 건너뜁니다."
             fi
-          EOF
-          
-      - name: Nginx 설정 업데이트
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
-            echo "Nginx 설정 변경 사항 반영 중입니다..."
-          
-            # Nginx 설정 파일 검증
-            if ! docker exec nginx-container nginx -t; then
-              echo "Nginx 설정 파일 검증 실패! Nginx 로그 확인 필요.";
-              docker logs nginx-container;
-              exit 1;
-            fi
-            
-            # Nginx 설정 다시 로드 (무중단)
-            docker exec nginx-container nginx -s reload
-            echo "Nginx 설정 파일이 성공적으로 반영되었습니다."
           EOF
 
       - name: .env 파일 정리
