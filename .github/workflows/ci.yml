@@ -42,3 +42,6 @@ jobs:
 
       - name: 테스트 실행
         run: ./gradlew test
+
+      - name: .env 파일 정리
+        run: rm .env
