@@ -1,0 +1,132 @@
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+permissions:
+  contents: read
+
+jobs:
+  cd:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4  # 현재 리포지토리 코드 가져오기
+
+      - name: JDK 17 설정
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Gradle 캐시 설정
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: 환경 변수 파일 생성 (.env)
+        run: |
+          echo "${{ secrets.PROD_ENV }}" > .env
+          
+      - name: Docker 이미지 빌드 및 푸시
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+        run: |
+          docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
+          
+          # active_env.txt 파일이 없을 경우 기본값으로 Blue 설정
+          if [ ! -f active_env.txt ]; then
+            echo "active_env.txt 파일이 없습니다. 기본 환경을 'blue'로 설정합니다."
+            echo "blue" > active_env.txt
+          fi
+          
+          # 현재 활성화된 환경 확인
+          if [ "$(cat active_env.txt)" == "blue" ]; then
+            NEXT_ENV="green"
+          else
+            NEXT_ENV="blue"
+          fi
+          echo "현재 환경: $(cat active_env.txt)"
+          echo "$NEXT_ENV 환경으로 전환합니다."
+          docker build -t $DOCKERHUB_USERNAME/manchui_server:$NEXT_ENV .
+          docker push $DOCKERHUB_USERNAME/manchui_server:$NEXT_ENV
+
+      - name: active_env.txt 파일 복사
+        run: |
+          scp -o StrictHostKeyChecking=no active_env.txt ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/deploy/active_env.txt
+          
+      - name: 환경 변수 파일 복사 (.env)
+        run: |
+          scp -o StrictHostKeyChecking=no .env ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/deploy/.env
+          
+      - name: docker-compose.yml 파일 복사
+        run: |
+          scp -o StrictHostKeyChecking=no docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/deploy/docker-compose.yml
+          
+      - name: Nginx 폴더 복사
+        run: |
+          scp -o StrictHostKeyChecking=no -r Nginx ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/deploy
+          
+      - name: 다음 환경으로 배포
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
+            echo "$NEXT_ENV 환경으로 배포 중입니다..."
+          
+            # 이전 환경 읽기
+            PREVIOUS_ENV=$(cat active_env.txt)
+          
+            # 작업 디렉토리 이동
+            cd /home/${{ secrets.SSH_USER }}/deploy
+          
+            # 다음 환경의 컨테이너 실행
+            docker-compose up -d $NEXT_ENV
+          
+            # 현재 활성화된 환경 중지
+            docker-compose stop $PREVIOUS_ENV
+          
+            # active_env.txt 파일 업데이트
+            echo $NEXT_ENV > active_env.txt
+          EOF
+          
+      - name: 이전 환경 컨테이너 정리
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
+            echo "이전 환경 컨테이너를 정리합니다..."
+            cd /home/${{ secrets.SSH_USER }}/deploy
+          
+            #이전 환경 제거
+            if [ "$PREVIOUS_ENV" != "$NEXT_ENV" ]; then
+              echo "이전 환경($PREVIOUS_ENV) 컨테이너를 제거합니다."
+              docker-compose rm -f $PREVIOUS_ENV
+              echo "$PREVIOUS_ENV 컨테이너가 성공적으로 제거되었습니다."
+            else
+              echo "현재 환경과 이전 환경이 동일합니다. 정리 작업을 건너뜁니다."
+            fi
+          EOF
+          
+      - name: Nginx 설정 업데이트
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
+            echo "Nginx 설정 변경 사항 반영 중입니다..."
+          
+            # Nginx 설정 파일 검증
+            if ! docker exec nginx-container nginx -t; then
+              echo "Nginx 설정 파일 검증 실패! Nginx 로그 확인 필요.";
+              docker logs nginx-container;
+              exit 1;
+            fi
+            
+            # Nginx 설정 다시 로드 (무중단)
+            docker exec nginx-container nginx -s reload
+            echo "Nginx 설정 파일이 성공적으로 반영되었습니다."
+          EOF
+
+      - name: .env 파일 정리
+        run: rm .env
