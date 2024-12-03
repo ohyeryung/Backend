@@ -42,18 +42,18 @@ jobs:
           docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
           
           # active_env.txt 파일이 없을 경우 기본값으로 Blue 설정
-          if [ ! -f active_env.txt ]; then
-            echo "active_env.txt 파일이 없습니다. 기본 환경을 'blue'로 설정합니다."
-            echo "blue" > active_env.txt
-          fi
+          # EC2 서버의 active_env.txt 파일 확인 및 저장
+          CURRENT_ENV=$(ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cat /home/${{ secrets.SSH_USER }}/deploy/active_env.txt || echo 'blue'")
+          echo "$CURRENT_ENV" > active_env.txt
           
           # 현재 활성화된 환경 확인
-          if [ "$(cat active_env.txt)" == "blue" ]; then
+          if [ "$CURRENT_ENV" == "blue" ]; then
             NEXT_ENV="green"
           else
             NEXT_ENV="blue"
           fi
-          echo "현재 환경: $(cat active_env.txt)"
+          
+          echo "현재 환경: $CURRENT_ENV"
           echo "$NEXT_ENV 환경으로 전환합니다."
           docker build -t $DOCKERHUB_USERNAME/manchui_server:$NEXT_ENV .
           docker push $DOCKERHUB_USERNAME/manchui_server:$NEXT_ENV
@@ -69,7 +69,7 @@ jobs:
       - name: docker-compose.yml 파일 복사
         run: |
           scp -o StrictHostKeyChecking=no docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/deploy/docker-compose.yml
-          
+
       - name: Nginx 폴더 복사
         run: |
           scp -o StrictHostKeyChecking=no -r Nginx ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/deploy
@@ -77,29 +77,24 @@ jobs:
       - name: 다음 환경으로 배포
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
+            set -e
             echo "$NEXT_ENV 환경으로 배포 중입니다..."
-          
+            
             # 이전 환경 읽기
-            PREVIOUS_ENV=$(cat active_env.txt)
+            export PREVIOUS_ENV=$CURRENT_ENV
           
             # 작업 디렉토리 이동
             cd /home/${{ secrets.SSH_USER }}/deploy
           
             # 다음 환경의 컨테이너 실행
+            export NEXT_ENV=$NEXT_ENV
             docker-compose up -d $NEXT_ENV
-          
-            # 현재 활성화된 환경 중지
-            docker-compose stop $PREVIOUS_ENV
           
             # active_env.txt 파일 업데이트
             echo $NEXT_ENV > active_env.txt
           
             # Nginx proxy_pass 전환
-            if [ "$NEXT_ENV" == "blue" ]; then
-              sed -i 's|proxy_pass http://green;|proxy_pass http://blue;|g' Nginx/config/nginx.conf
-            else
-              sed -i 's|proxy_pass http://blue;|proxy_pass http://green;|g' Nginx/config/nginx.conf
-            fi
+            sed -i "s|proxy_pass http://.*;|proxy_pass http://$NEXT_ENV;|g" Nginx/config/nginx.conf
 
             echo "Nginx 설정 변경 사항 반영 중입니다..."
           
@@ -118,12 +113,17 @@ jobs:
       - name: 이전 환경 컨테이너 정리
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
+            set -e
             echo "이전 환경 컨테이너를 정리합니다..."
             cd /home/${{ secrets.SSH_USER }}/deploy
+          
+            export NEXT_ENV=$NEXT_ENV
+            export PREVIOUS_ENV=$CURRENT_ENV
           
             #이전 환경 제거
             if [ "$PREVIOUS_ENV" != "$NEXT_ENV" ]; then
               echo "이전 환경($PREVIOUS_ENV) 컨테이너를 제거합니다."
+              docker-compose stop $PREVIOUS_ENV
               docker-compose rm -f $PREVIOUS_ENV
               echo "$PREVIOUS_ENV 컨테이너가 성공적으로 제거되었습니다."
             else
