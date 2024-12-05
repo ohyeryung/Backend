@@ -17,6 +17,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
@@ -57,11 +59,8 @@ public class CustomLogoutFilter extends GenericFilterBean {
 
 
         //Refresh 토큰 쿠키 만료
-        Cookie cookie = new Cookie("refresh", null);
-        cookie.setMaxAge(0);
-        cookie.setPath("/");
+        setResponseCookie(response, "refresh", null);
 
-        response.addCookie(cookie);
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
@@ -73,6 +72,17 @@ public class CustomLogoutFilter extends GenericFilterBean {
                 "}";
 
         response.getWriter().write(jsonResponse);
+    }
+
+    private void setResponseCookie(HttpServletResponse response, String key, String value) {
+        ResponseCookie cookie = ResponseCookie.from(key, value)
+                .maxAge(0)
+                .sameSite("None")
+                .secure(true)
+                .httpOnly(true)
+                .path("/")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
     private void validateRefreshToken(HttpServletRequest request, HttpServletResponse response, String refresh) {
