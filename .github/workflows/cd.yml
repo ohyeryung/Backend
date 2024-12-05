@@ -34,6 +34,12 @@ jobs:
         run: |
           echo "${{ secrets.PROD_ENV }}" > .env
 
+      - name: Gradlew 실행 권한 부여
+        run: chmod +x gradlew
+
+      - name: Gradle 빌드
+        run: ./gradlew build
+
       - name: SSH 키 설정
         run: |
           mkdir -p ~/.ssh
