@@ -116,8 +116,7 @@ jobs:
             # 다음 환경의 컨테이너 실행
             sudo docker-compose up -d $NEXT_ENV
           
-            # active_env.txt 파일 업데이트
-            echo $NEXT_ENV > active_env.txt
+            
           
             # Nginx proxy_pass 전환
             sed -i "s|proxy_pass http://.*;|proxy_pass http://$NEXT_ENV;|g" Nginx/config/nginx.conf
@@ -160,6 +159,9 @@ jobs:
               echo "현재 환경과 이전 환경이 동일합니다. 정리 작업을 건너뜁니다."
             fi
           EOF
+          
+          # active_env.txt 파일 업데이트
+          echo $NEXT_ENV > active_env.txt
 
       - name: .env 파일 정리
         run: rm .env
