@@ -114,12 +114,12 @@ jobs:
             cd /home/${{ secrets.SSH_USER }}/deploy
           
             # 다음 환경의 컨테이너 실행
-            sudo docker-compose up -d $NEXT_ENV
+            sudo docker-compose up -d \$NEXT_ENV
           
             
           
             # Nginx proxy_pass 전환
-            sed -i "s|proxy_pass http://.*;|proxy_pass http://$NEXT_ENV;|g" Nginx/config/nginx.conf
+            sed -i "s|proxy_pass http://.*;|proxy_pass http://\$NEXT_ENV;|g" Nginx/config/nginx.conf
 
             echo "Nginx 설정 변경 사항 반영 중입니다..."
           
