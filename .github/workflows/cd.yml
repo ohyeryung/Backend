@@ -167,10 +167,11 @@ jobs:
             else
               echo "현재 환경과 이전 환경이 동일합니다. 정리 작업을 건너뜁니다."
             fi
-          EOF
           
-          # active_env.txt 파일 업데이트
-          echo $NEXT_ENV > active_env.txt
+            # active_env.txt 파일 업데이트
+            echo \$NEXT_ENV > active_env.txt
+            echo "active_env.txt: \$NEXT_ENV"
+          EOF
 
       - name: .env 파일 정리
         run: rm .env
