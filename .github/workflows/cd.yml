@@ -33,6 +33,12 @@ jobs:
       - name: 환경 변수 파일 생성 (.env)
         run: |
           echo "${{ secrets.PROD_ENV }}" > .env
+
+      - name: SSH 키 설정
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
           
       - name: Docker 이미지 빌드 및 푸시
         env:
@@ -43,7 +49,7 @@ jobs:
           
           # active_env.txt 파일이 없을 경우 기본값으로 Blue 설정
           # EC2 서버의 active_env.txt 파일 확인 및 저장
-          CURRENT_ENV=$(ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cat /home/${{ secrets.SSH_USER }}/deploy/active_env.txt || echo 'blue'")
+          CURRENT_ENV=$(ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cat /home/${{ secrets.SSH_USER }}/deploy/active_env.txt || echo 'blue'")
           echo "$CURRENT_ENV" > active_env.txt
           
           # 현재 활성화된 환경 확인
@@ -60,23 +66,23 @@ jobs:
 
       - name: active_env.txt 파일 복사
         run: |
-          scp -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} active_env.txt ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/deploy/active_env.txt
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa active_env.txt ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/deploy/active_env.txt
           
       - name: 환경 변수 파일 복사 (.env)
         run: |
-          scp -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} .env ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/deploy/.env
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa .env ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/deploy/.env
           
       - name: docker-compose.yml 파일 복사
         run: |
-          scp -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/deploy/docker-compose.yml
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa docker-compose.yml ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/deploy/docker-compose.yml
 
       - name: Nginx 폴더 복사
         run: |
-          scp -o StrictHostKeyChecking=no -r Nginx -i ${{ secrets.SSH_PRIVATE_KEY }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/deploy
+          scp -o StrictHostKeyChecking=no -r Nginx -i ~/.ssh/id_rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/deploy
           
       - name: 다음 환경으로 배포
         run: |
-          ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
             set -e
             echo "$NEXT_ENV 환경으로 배포 중입니다..."
             
@@ -112,7 +118,7 @@ jobs:
           
       - name: 이전 환경 컨테이너 정리
         run: |
-          ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
             set -e
             echo "이전 환경 컨테이너를 정리합니다..."
             cd /home/${{ secrets.SSH_USER }}/deploy
