@@ -84,7 +84,7 @@ jobs:
 
       - name: Nginx 폴더 복사
         run: |
-          scp -o StrictHostKeyChecking=no -r Nginx -i ~/.ssh/id_rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/deploy
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -r Nginx ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/deploy
           
       - name: 다음 환경으로 배포
         run: |
