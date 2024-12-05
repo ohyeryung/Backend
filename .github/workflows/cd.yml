@@ -142,8 +142,8 @@ jobs:
             echo "이전 환경 컨테이너를 정리합니다..."
             cd /home/${{ secrets.SSH_USER }}/deploy
           
-            export NEXT_ENV=$NEXT_ENV
-            export PREVIOUS_ENV=$CURRENT_ENV
+            NEXT_ENV=$NEXT_ENV
+            PREVIOUS_ENV=$CURRENT_ENV
             echo "테스트: $NEXT_ENV"
             echo "테스트: $CURRENT_ENV"
             echo "현재 환경: \$NEXT_ENV"
