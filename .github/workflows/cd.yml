@@ -145,6 +145,10 @@ jobs:
           
             export NEXT_ENV=$NEXT_ENV
             export PREVIOUS_ENV=$CURRENT_ENV
+            echo "테스트: $NEXT_ENV"
+            echo "테스트: $CURRENT_ENV"
+            echo "현재 환경: \$NEXT_ENV"
+            echo "다음 환경: \$PREVIOUS_ENV"
           
             #이전 환경 제거
             if [ "$PREVIOUS_ENV" != "$NEXT_ENV" ]; then
