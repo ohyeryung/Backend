@@ -90,11 +90,11 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
             set -e
-            export NEXT_ENV=$NEXT_ENV
+            NEXT_ENV=$NEXT_ENV
             echo "$NEXT_ENV 환경으로 배포 중입니다..."
             
             # 이전 환경 읽기
-            export PREVIOUS_ENV=$CURRENT_ENV
+            PREVIOUS_ENV=$CURRENT_ENV
             echo "이전 환경: $PREVIOUS_ENV" 
           
             # 작업 디렉토리 이동
