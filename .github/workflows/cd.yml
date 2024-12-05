@@ -103,6 +103,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
             set -e
             NEXT_ENV=$NEXT_ENV
+            CURRENT_ENV=$CURRENT_ENV
             echo "$NEXT_ENV 환경으로 배포 중입니다..."
             
             # 이전 환경 읽기
