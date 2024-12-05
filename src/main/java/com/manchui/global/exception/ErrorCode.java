@@ -63,8 +63,9 @@ public enum ErrorCode {
     ILLEGAL_EMPTY_FILE(HttpStatus.BAD_REQUEST, "이미지 파일은 필수 입력 값입니다."),
     WRONG_TYPE_IMAGE(HttpStatus.BAD_REQUEST, "유효하지 않은 이미지 파일형식 입니다."),
     FAILED_UPLOAD_IMAGE(HttpStatus.BAD_REQUEST, "이미지 업로드에 실패했습니다."),
-    IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "이미지를 찾을수 없습니다.");
-
+    IMAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "이미지를 찾을수 없습니다."),
+    ILLEGAL_IMAGE_URL(HttpStatus.BAD_REQUEST, "이미지 URL이 유효하지 않습니다."),
+    IMAGE_UPLOAD_FAILED(HttpStatus.BAD_REQUEST, "이미지를 업로드하는 데 실패했습니다. 유효한 URL인지 확인해주세요.");
 
     private final HttpStatus httpStatus;
     private final String message;

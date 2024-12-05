@@ -2,7 +2,9 @@ package com.manchui.domain.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.manchui.domain.entity.Image;
 import com.manchui.domain.entity.User;
+import com.manchui.domain.repository.ImageRepository;
 import com.manchui.domain.repository.UserRepository;
 import com.manchui.global.exception.CustomException;
 import com.manchui.global.exception.ErrorCode;
@@ -26,6 +28,8 @@ public class Oauth2Service {
     private final JWTUtil jwtUtil;
     private final UserRepository userRepository;
     private final RedisRefreshTokenService redisRefreshTokenService;
+    private final ImageServiceImpl imageService;
+    private final ImageRepository imageRepository;
     @Value("${token.access.expiration}")
     private Long accessTokenExpiration;
 
@@ -92,6 +96,7 @@ public class Oauth2Service {
             JsonNode tokenNode = objectMapper.readTree(response.getBody());
             return tokenNode.get("access_token").asText();
         } catch (Exception e) {
+            log.error("KAKAO_AUTHENTICATION_FAILED: {}", e.getMessage(), e);
             throw new CustomException(ErrorCode.KAKAO_AUTHENTICATION_FAILED);
         }
     }
@@ -122,14 +127,23 @@ public class Oauth2Service {
             String email = userInfoNode.path("kakao_account").path("email").asText();
             String nickname = userInfoNode.path("properties").path("nickname").asText();
             String id = userInfoNode.path("id").asText();
+            String profileImageUrl = userInfoNode.path("properties").path("profile_image").asText();
+
+            String filePath = null;
+            if (!(profileImageUrl.isEmpty())) {
+                Long imageId = imageService.uploadUserProfileImageFromUrl(profileImageUrl);
+                Image image = imageRepository.findById(imageId)
+                        .orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
+                filePath = image.getFilePath();
+            }
 
             // 데이터베이스에서 해당 이메일의 사용자 조회
             User findUser = userRepository.findByEmail(email);
             if (findUser == null) {
                 // 사용자가 없으면 새로 생성하여 저장
-                User user = new User("kakao" + id, email);
+                User user = new User("kakao" + id, email, nickname, filePath);
                 userRepository.save(user);
-            }else {
+            } else {
                 // 다른 OAuth 제공자로 동일한 이메일을 사용하는 경우 예외 발생
                 if (!findUser.getOauth2Id().equals("kakao" + id)) {
                     throw new CustomException(ErrorCode.DUPLICATE_EMAIL_FOR_DIFFERENT_PROVIDER);
@@ -156,7 +170,17 @@ public class Oauth2Service {
             return ResponseEntity.ok()
                     .headers(responseHeaders)
                     .body(SuccessResponse.successWithNoData("로그인 성공"));
-        } catch (Exception e) {
+        }catch (CustomException e) {
+            // DUPLICATE_EMAIL_FOR_DIFFERENT_PROVIDER 예외일 경우 처리
+            if (e.getErrorCode() == ErrorCode.DUPLICATE_EMAIL_FOR_DIFFERENT_PROVIDER) {
+                log.error("DUPLICATE_EMAIL_FOR_DIFFERENT_PROVIDER: {}", e.getMessage(), e);
+                throw e; // 그대로 다시 던짐
+            }
+            // 다른 CustomException도 그대로 던짐
+            log.error("CustomException occurred: {}", e.getMessage(), e);
+            throw e;
+        }catch (Exception e) {
+            log.error("KAKAO_LOGIN_PROCESS_FAILED: {}", e.getMessage(), e);
             throw new CustomException(ErrorCode.KAKAO_LOGIN_PROCESS_FAILED);
         }
     }
@@ -220,12 +244,21 @@ public class Oauth2Service {
             String email = userInfoNode.path("email").asText();
             String name = userInfoNode.path("name").asText();
             String id = userInfoNode.path("id").asText();
+            String profileImageUrl = userInfoNode.path("picture").asText();
 
+            String filePath = null;
+            if (!(profileImageUrl.isEmpty())) {
+                Long imageId = imageService.uploadUserProfileImageFromUrl(profileImageUrl);
+                Image image = imageRepository.findById(imageId)
+                        .orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
+                filePath = image.getFilePath();
+                log.info("filePath = {}", filePath);
+            }
             // 데이터베이스에서 해당 이메일의 사용자 조회
             User findUser = userRepository.findByEmail(email);
             if (findUser == null) {
                 // 사용자가 없으면 새로 생성하여 저장
-                User user = new User("google" + id, email);
+                User user = new User("google" + id, email, name, filePath);
                 userRepository.save(user);
             } else {
                 if (!findUser.getOauth2Id().equals("google" + id)) {
@@ -254,6 +287,15 @@ public class Oauth2Service {
             return ResponseEntity.ok()
                     .headers(responseHeaders)
                     .body(SuccessResponse.successWithNoData("로그인 성공"));
+        } catch (CustomException e) {
+            // DUPLICATE_EMAIL_FOR_DIFFERENT_PROVIDER 예외일 경우 처리
+            if (e.getErrorCode() == ErrorCode.DUPLICATE_EMAIL_FOR_DIFFERENT_PROVIDER) {
+                log.error("DUPLICATE_EMAIL_FOR_DIFFERENT_PROVIDER: {}", e.getMessage(), e);
+                throw e; // 그대로 다시 던짐
+            }
+            // 다른 CustomException도 그대로 던짐
+            log.error("CustomException occurred: {}", e.getMessage(), e);
+            throw e;
         } catch (Exception e) {
             throw new CustomException(ErrorCode.GOOGLE_LOGIN_PROCESS_FAILED);
         }
@@ -318,14 +360,22 @@ public class Oauth2Service {
             // 사용자 정보 파싱
             JsonNode userInfoNode = objectMapper.readTree(userInfoResponse.getBody());
             String email = userInfoNode.path("response").path("email").asText();
-            String name = userInfoNode.path("response").path("name").asText();
+            String nickname = userInfoNode.path("response").path("nickname").asText();
             String id = userInfoNode.path("response").path("id").asText();
+            String profileImageUrl = userInfoNode.path("response").path("profile_image").asText();
 
+            String filePath = null;
+            if (!(profileImageUrl.isEmpty())) {
+                Long imageId = imageService.uploadUserProfileImageFromUrl(profileImageUrl);
+                Image image = imageRepository.findById(imageId)
+                        .orElseThrow(() -> new CustomException(ErrorCode.IMAGE_NOT_FOUND));
+                filePath = image.getFilePath();
+            }
             // 데이터베이스에서 해당 이메일의 사용자 조회
             User findUser = userRepository.findByEmail(email);
             if (findUser == null) {
                 // 사용자가 없으면 새로 생성하여 저장
-                User user = new User("naver" + id, email);
+                User user = new User("naver" + id, email, nickname, filePath);
                 userRepository.save(user);
             } else {
                 if (!findUser.getOauth2Id().equals("naver" + id)) {
@@ -354,8 +404,17 @@ public class Oauth2Service {
             return ResponseEntity.ok()
                     .headers(responseHeaders)
                     .body(SuccessResponse.successWithNoData("로그인 성공"));
+        } catch (CustomException e) {
+            // DUPLICATE_EMAIL_FOR_DIFFERENT_PROVIDER 예외일 경우 처리
+            if (e.getErrorCode() == ErrorCode.DUPLICATE_EMAIL_FOR_DIFFERENT_PROVIDER) {
+                log.error("DUPLICATE_EMAIL_FOR_DIFFERENT_PROVIDER: {}", e.getMessage(), e);
+                throw e; // 그대로 다시 던짐
+            }
+            // 다른 CustomException도 그대로 던짐
+            log.error("CustomException occurred: {}", e.getMessage(), e);
+            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Error during Naver login process", e);
+            throw new CustomException(ErrorCode.NAVER_LOGIN_PROCESS_FAILED);
         }
     }
 

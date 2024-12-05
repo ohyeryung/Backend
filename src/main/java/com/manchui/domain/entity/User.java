@@ -36,9 +36,11 @@ public class User extends Timestamped {
         this.password = password;
     }
 
-    public User(String oAuth2Id, String email) {
+    public User(String oAuth2Id, String email, String name, String profileImagePath) {
         this.oauth2Id = oAuth2Id;
         this.email = email;
+        this.name = name;
+        this.profileImagePath = profileImagePath;
     }
 
     public void editEmail(String email) {
