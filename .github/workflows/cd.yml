@@ -88,6 +88,18 @@ jobs:
           
       - name: 다음 환경으로 배포
         run: |
+          
+          # 로컬에서 `active_env.txt` 읽기
+          CURRENT_ENV=$(cat active_env.txt)
+          if [ "$CURRENT_ENV" == "blue" ]; then
+            NEXT_ENV="green"
+          else
+            NEXT_ENV="blue"
+          fi
+      
+          echo "현재 환경: $CURRENT_ENV"
+          echo "다음 환경: $NEXT_ENV"
+          
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
             set -e
             NEXT_ENV=$NEXT_ENV
