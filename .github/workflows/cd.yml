@@ -104,11 +104,11 @@ jobs:
             set -e
             NEXT_ENV=$NEXT_ENV
             CURRENT_ENV=$CURRENT_ENV
-            echo "$NEXT_ENV 환경으로 배포 중입니다..."
+            echo "\$NEXT_ENV 환경으로 배포 중입니다..."
             
             # 이전 환경 읽기
-            PREVIOUS_ENV=$CURRENT_ENV
-            echo "이전 환경: $PREVIOUS_ENV" 
+            PREVIOUS_ENV=\$CURRENT_ENV
+            echo "이전 환경: \$PREVIOUS_ENV" 
           
             # 작업 디렉토리 이동
             cd /home/${{ secrets.SSH_USER }}/deploy
