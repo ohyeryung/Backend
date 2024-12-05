@@ -95,12 +95,12 @@ jobs:
             
             # 이전 환경 읽기
             export PREVIOUS_ENV=$CURRENT_ENV
+            echo "이전 환경: $PREVIOUS_ENV" 
           
             # 작업 디렉토리 이동
             cd /home/${{ secrets.SSH_USER }}/deploy
           
             # 다음 환경의 컨테이너 실행
-            export NEXT_ENV=$NEXT_ENV
             sudo docker-compose up -d $NEXT_ENV
           
             # active_env.txt 파일 업데이트
