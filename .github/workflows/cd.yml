@@ -133,42 +133,8 @@ jobs:
             # Nginx 설정 다시 로드 (무중단)
             sudo docker exec nginx-container nginx -s reload
             echo "Nginx 설정 파일이 성공적으로 반영되었습니다."
-          EOF
           
-      - name: 이전 환경 컨테이너 정리
-        run: |
-          # 로컬에서 `active_env.txt` 읽기
-          CURRENT_ENV=$(cat active_env.txt)
-          if [ "$CURRENT_ENV" == "blue" ]; then
-            NEXT_ENV="green"
-          else
-            NEXT_ENV="blue"
-          fi
-          
-          echo "현재 환경: $CURRENT_ENV"
-          echo "다음 환경: $NEXT_ENV"
-          
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << EOF
-            set -e
-            echo "이전 환경 컨테이너를 정리합니다..."
-            cd /home/${{ secrets.SSH_USER }}/deploy
-          
-            NEXT_ENV=$NEXT_ENV
-            PREVIOUS_ENV=$CURRENT_ENV
-            echo "현재 환경: \$NEXT_ENV"
-            echo "다음 환경: \$PREVIOUS_ENV"
-          
-            #이전 환경 제거
-            if [ "\$PREVIOUS_ENV" != "\$NEXT_ENV" ]; then
-              echo "이전 환경(\$PREVIOUS_ENV) 컨테이너를 제거합니다."
-              sudo docker-compose stop \$PREVIOUS_ENV
-              sudo docker-compose rm -f \$PREVIOUS_ENV
-              echo "$PREVIOUS_ENV 컨테이너가 성공적으로 제거되었습니다."
-            else
-              echo "현재 환경과 이전 환경이 동일합니다. 정리 작업을 건너뜁니다."
-            fi
-          
-            # active_env.txt 파일 업데이트
+            # active_env.txt 파일 업데이트  
             echo \$NEXT_ENV > active_env.txt
             echo "active_env.txt: \$NEXT_ENV"
           EOF
